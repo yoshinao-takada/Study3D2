@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.ispc": "ispc",
+        "nlslutils.h": "c",
+        "nlslvars.h": "c",
+        "testutils.h": "c"
+    }
+}
