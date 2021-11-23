@@ -3,6 +3,9 @@
         "*.ispc": "ispc",
         "nlslutils.h": "c",
         "nlslvars.h": "c",
-        "testutils.h": "c"
+        "testutils.h": "c",
+        "pmatrix.h": "c",
+        "math.h": "c",
+        "pvector.h": "c"
     }
 }

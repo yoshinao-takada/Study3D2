@@ -153,6 +153,38 @@ static int Pvector_proj()
     return err;
 }
 
+static int Pvector_orthogonalintersection()
+{
+    static const float p0[] = { 1.0f, -1.5f, 2.0f, 0.3f };
+    static const float dir[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    static const float p1[] = { -1.0f, -1.0f, 2.0f, 2.0f };
+    float work[P3VSIZE * 2];
+    float work2[P3VSIZE];
+    int err = EXIT_SUCCESS;
+    do {
+        const float* orthline = P3V_orthogonalintersection(p0, dir, p1, work);
+        // check orthogonality of two lines
+        float dirDotOrthDir = P3V_dot(dir, orthline + 4);
+        if (dirDotOrthDir > testtol)
+        {
+            err = EXIT_FAILURE;
+            LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "P3V_orthogonalintersection() failed.");
+        }
+        // check if orthline P0 is on the refline.
+        const float* orthlineP0_reflineP0 = P3V_sub(orthline, p0, work2);
+        float orthlineP0_reflineP0_dot_reflinedir = P3V_dot(orthlineP0_reflineP0, dir);
+        float lengthProduct = sqrtf(
+            P3V_dot(orthlineP0_reflineP0, orthlineP0_reflineP0) *
+            P3V_dot(dir, dir));
+        if (TESTEQUALF(lengthProduct, orthlineP0_reflineP0_dot_reflinedir, testtol))
+        {
+            err = EXIT_FAILURE;
+            LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "P3V_")
+        }
+    } while (0);
+    return err;
+}
+
 int PvectorUT()
 {
     int err = EXIT_SUCCESS;
@@ -166,6 +198,10 @@ int PvectorUT()
             LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "Fail in Pvector_angle()");
         }
         if (EXIT_SUCCESS != (err = Pvector_proj()))
+        {
+            LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "Fail in Pvector_proj()");
+        }
+        if (EXIT_SUCCESS != (err = Pvector_orthogonalintersection()))
         {
             LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "Fail in Pvector_proj()");
         }

@@ -82,7 +82,7 @@ P<sub>0</sub> = [
 ]  
 
 Generic projection matrix is a product of the three matrices.  
-P = P<sub>I</sub> P<sub>0</sub> P<sub>E</sub> =  [  
+P = P<sub>I</sub> P<sub>0</sub> P<sub>E</sub> = [  
     &nbsp; &nbsp; _&Alpha;_<sub>I00</sub> _&Alpha;_<sub>E00</sub> + _T_<sub>I0</sub> _&Alpha;_<sub>E20</sub> ,
     &nbsp; &nbsp; _&Alpha;_<sub>I00</sub> _&Alpha;_<sub>E01</sub> + _T_<sub>I0</sub> _&Alpha;_<sub>E21</sub> ,
     &nbsp; &nbsp; _&Alpha;_<sub>I00</sub> _&Alpha;_<sub>E02</sub> + _T_<sub>I0</sub> _&Alpha;_<sub>E22</sub> ,

@@ -7,12 +7,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static const int P3Mrows = 4;
-static const int P3Mcolumns = 4;
-static const int P3Msize = P3Mrows * P3Mrows;
-static const int P2Mrows = 3;
-static const int P2Mcolumns = 3;
-static const int P2Msize = P2Mrows * P2Mrows;
+static const int P3Mrows = P3MROWS;
+static const int P3Mcolumns = P3MCOLUMNS;
+static const int P3Msize = P3MSIZE;
+static const int P2Mrows = P2MROWS;
+static const int P2Mcolumns = P2MCOLUMNS;
+static const int P2Msize = P2MSIZE;
 
 static const float CoordAxes[][4] =
 {
@@ -127,8 +127,8 @@ const float* P3M_align(const float* fromP3, const float* toP3, float* mwork)
     float azTo = R3V_azimuth(toP3);
     float azFrom = R3V_azimuth(fromP3);
     // elevation angles
-    float elTo = R3V_elevation(toP3);
-    float elFrom = R3V_elevation(fromP3);
+    float elTo = R3V_polar(toP3);
+    float elFrom = R3V_polar(fromP3);
     // create working matrices
     float* p = (float*)calloc(4 * P3Msize, sizeof(float));
     if (!p)
@@ -154,31 +154,44 @@ const float* P3M_inv(const float* m, float* mwork)
     return result_.elements.c;
 }
 
-const float* P3M_rotatewithaxis(float angle, const float* p0, const float* dir, float* mwork)
+const float* P3M_rotateaboutaxis(float angle, const float* p0, const float* dir, float* mwork)
 {
     const float* result = NULL;
-    float* p = NULL;
-    int selectedAxis = (int)AxisUndefined;
-    float maxDotProduct = 0.0f;
-    for (int axisIndex = 0; axisIndex != NLSL_ARRAYSIZE(CoordAxes); axisIndex++)
-    {
-        float dotProduct = P3V_dot(CoordAxes[axisIndex], dir);
-        if (dotProduct > maxDotProduct)
-        {
-            maxDotProduct = dotProduct;
-            selectedAxis = axisIndex;
-        }
-    }
-    p = (float*)calloc(4 * P3Msize, sizeof(float));
-    const float* moveP0 = P3M_transport(p0, OriginP3, p); // transport matrix from p0 to origin
-    const float* alignDir = P3M_align(dir, CoordAxes[selectedAxis], p + P3Msize);
-    const float* toCoordAxis = P3M_mult(alignDir, moveP0, p + 2 * P3Msize);
-    const float* toCoordAxisInv = P3M_inv(toCoordAxis, p); // p was recycled.
-    const float* rotator = Rotators[selectedAxis](angle, p + P3Msize); // p + P3Msize was recycled.
-    result = P3M_mult(toCoordAxisInv, P3M_mult(rotator, toCoordAxis, p + 3 * P3Msize), mwork);
-    free(p);
+    const float* xaxis = CoordAxes[0]; // x-positive axis
+    float p[4][P3Msize];
+    const float *toOrigin = P3M_transport(p0, OriginP3, p[0]); // transport matrix from p0 to origin
+    const float *alignXaxis = P3M_align(dir, xaxis, p[1]);
+    const float *toRotationAxis = P3M_mult(alignXaxis, toOrigin, p[2]);
+    const float *rotate = P3M_rotateX(angle, p[3]);
+    const float *returnToOriginalAxis = P3M_inv(toRotationAxis, p[0]);
+    result = P3M_mult(returnToOriginalAxis, P3M_mult(rotate, toRotationAxis, p[1]), mwork);
     return result;
 }
+// const float* P3M_rotateaboutaxis(
+// {
+//     const float* result = NULL;
+//     float* p = NULL;
+//     int selectedAxis = (int)AxisUndefined;
+//     float maxDotProduct = 0.0f;
+//     for (int axisIndex = 0; axisIndex != NLSL_ARRAYSIZE(CoordAxes); axisIndex++)
+//     {
+//         float dotProduct = P3V_dot(CoordAxes[axisIndex], dir);
+//         if (dotProduct > maxDotProduct)
+//         {
+//             maxDotProduct = dotProduct;
+//             selectedAxis = axisIndex;
+//         }
+//     }
+//     p = (float*)calloc(4 * P3Msize, sizeof(float));
+//     const float* moveP0 = P3M_transport(p0, OriginP3, p); // transport matrix from p0 to origin
+//     const float* alignDir = P3M_align(dir, CoordAxes[selectedAxis], p + P3Msize);
+//     const float* toCoordAxis = P3M_mult(alignDir, moveP0, p + 2 * P3Msize);
+//     const float* toCoordAxisInv = P3M_inv(toCoordAxis, p); // p was recycled.
+//     const float* rotator = Rotators[selectedAxis](angle, p + P3Msize); // p + P3Msize was recycled.
+//     result = P3M_mult(toCoordAxisInv, P3M_mult(rotator, toCoordAxis, p + 3 * P3Msize), mwork);
+//     free(p);
+//     return result;
+// }
 
 const float* P3M_tocameracoord(pcP3MCameraPosition_t cameraposition, float* mwork)
 {
@@ -193,7 +206,7 @@ const float* P3M_tocameracoord(pcP3MCameraPosition_t cameraposition, float* mwor
     const float* m0 = P3M_align(CoordAxes[(int)AxisZNeg], lookAtVector, pmat);
 
     // rotate about optical axis as m1
-    const float* m1 = P3M_rotatewithaxis(cameraposition->rotAng, cameraposition->position, lookAtVector, pmat + P3Msize);
+    const float* m1 = P3M_rotateaboutaxis(cameraposition->rotAng, cameraposition->position, lookAtVector, pmat + P3Msize);
 
     // move camera origin to look-from position as m2
     const float* m2 = P3M_transport(OriginP3, cameraposition->position, pmat + 2 * P3Msize);
@@ -221,11 +234,47 @@ const float* P3M_cameraintrinsics(pcP3MCamera_t camera, float* mwork)
     float xpe = tanf(half_fovx(camera));
     float xrd = xpe / (0.5f * vpwidth(camera));
     float ype = tanf(half_fovy(camera));
-    float yrd = ype / (0.5f * vpheight(camera));
+    float yrd = ype / (camera->vpTR[1] - 0.5f * (camera->vpBL[1] + camera->vpTR[1]));
     mwork[0] = 1.0f / xrd;
     mwork[2] = vpwidth(camera) / 2.0f;
     mwork[5] = 1.0f / yrd;
     mwork[6] = vpheight(camera) / 2.0f;
     mwork[10] = 1.0f;
+    return mwork;
+}
+
+const float* P2M_inv(const float* matA, float* mwork)
+{
+    NLSLmatrix_t matA_ = { P2Mrows, P2Mcolumns, { matA } };
+    NLSLmatrix_t invMatA_ = { P2Mrows, P2Mcolumns, { mwork } };
+    NLSLmatrix_inv(&matA_, &invMatA_);
+    return mwork;
+}
+
+const float* P2MP2V_mult(const float* matA, const float* vectorB, float* vwork)
+{
+    vwork[0] = matA[0] * vectorB[0] + matA[1] * vectorB[1] + matA[2] * vectorB[2];
+    vwork[1] = matA[3] * vectorB[0] + matA[4] * vectorB[1] + matA[5] * vectorB[2];
+    vwork[2] = matA[6] * vectorB[0] + matA[7] * vectorB[1] + matA[8] * vectorB[2];
+    return vwork;
+}
+
+const float* P2M_mult(const float* matA, const float* matB, float* mwork)
+{
+    for (int row = 0; row != P2Mrows; row++)
+    {
+        const float* matArow = matA + row * P2Mcolumns;
+        for (int column = 0; column != P2Mcolumns; column++)
+        {
+            const float* matBcolumn = matB + column;
+            int mworkIndex = row * P2Mcolumns + column;
+            mwork[mworkIndex] = 0.0f;
+            for (int isum = 0; isum != P2Mcolumns; isum++)
+            {
+                mwork[mworkIndex] += matArow[isum] * matBcolumn[P2Mcolumns * isum];
+            }
+
+        }
+    }
     return mwork;
 }

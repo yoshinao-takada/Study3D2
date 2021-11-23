@@ -7,6 +7,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define P3VSIZE     4
+#define P2VSIZE     3
+#define R3VSIZE     3
+#define R2VSIZE     2
+
 /**
  * @brief addion of P3 vector
  * 
@@ -88,6 +94,21 @@ const float* P2V_toR2V(const float* v, float* vwork);
  * @return const float* 
  */
 const float* P3V_normalize(const float* v, float* vwork);
+
+/**
+ * @brief draw a line orthogonal and crossing to a reference line
+ * 
+ * @param p0 [in] a reference point of the reference line
+ * @param dir [in] reference line direction vector
+ * @param p1 [in] a point to draw the orthogonal line
+ * @param vwork [in] work area convert to const float* to return, capacity = 8 * sizeof(float)
+ * @return const float* P3 intersection point and direction vector of the orthgonal line,
+ *  return pointer is the intersection point, return pointer + 4 is the direction vector.
+ */
+const float* P3V_orthogonalintersection(const float* p0, const float* dir, const float* p1, float* vwork);
+
+#define P3V_print(_out_, _caption_, _v_) fprintf(_out_, "%s, P3V:{ %f, %f, %f, %f }\n", (_caption_), \
+    (_v_)[0], (_v_)[1], (_v_)[2], (_v_)[3] );
 #ifdef __cplusplus
 }
 #endif
