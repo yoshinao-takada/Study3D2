@@ -37,22 +37,111 @@ Its real coordinate is
 __p__<sub>P</sub> = [ _x_<sub>P</sub> , _y_<sub>P</sub> ]<sup>T</sup> = 
 [ _X_<sub>P</sub> / _Z_<sub>P</sub> , _Y_<sub>P</sub> / _Z_<sub>P</sub>]<sup>T</sup>  
 <br>
-End of real viewport coordinate and center of real viewport coordinate is related by  
-(_x_<sub>R</sub><sup>E</sup> - _x_<sub>R</sub><sup>C</sup>) _x_<sub>R</sub><sup>D</sup> = 
-_x_<sub>P</sub><sup>E</sup>  
-(_y_<sub>R</sub><sup>E</sup> - _y_<sub>R</sub><sup>C</sup>) _y_<sub>R</sub><sup>D</sup> = 
-_y_<sub>P</sub><sup>E</sup>  
-_x_<sub>R</sub><sup>D</sup> = _x_<sub>p</sub><sup>E</sup> / (_x_<sub>R</sub><sup>E</sup> - _x_<sub>R</sub><sup>C</sup>)  
-_y_<sub>R</sub><sup>D</sup> = _y_<sub>P</sub><sup>E</sup> / (_y_<sub>R</sub><sup>E</sup> - _y_<sub>R</sub><sup>C</sup>)   
-General point in real viewport is  
-_x_<sub>R</sub> = _x_<sub>p</sub> / _x_<sub>R</sub><sup>D</sup> + _x_<sub>R</sub><sup>C</sup>  
-_y_<sub>R</sub> = _y_<sub>p</sub> / _y_<sub>R</sub><sup>D</sup> + _y_<sub>R</sub><sup>C</sup>  
-
-[ _X_<sub>R</sub> , _Y_<sub>R</sub> , _Z_<sub>R</sub> ]<sup>T</sup> = [  
-    &nbsp; &nbsp; 1 / _x_<sub>R</sub><sup>D</sup> , 0 , _x_<sub>R</sub><sup>C</sup> ;  
-    &nbsp; &nbsp; 0 , 1 / _y_<sub>R</sub><sup>D</sup> , _y_<sub>R</sub><sup>C</sup> ;  
+<!--
+  relationship among viewport parameters and the canonical projection plane coords
+-->
+2-D pixel array indices in homogeneous coordinate is __P__<sub>R</sub> and subarray is defined as  
+[ _X_<sub>R (_i_)</sub> .. _X_<sub>R (_i_+_j_-1)</sub> , _Y_<sub>R (_k_)</sub> .. _Y_<sub>R (_k_+_l_-1)</sub> ,
+_Z_<sub>R</sub> ]  
+Left, right, top, and bottom ends for the subarray is  
+    &nbsp; &nbsp; _X_<sub>R</sub><sup>L</sup> = _X_<sub>R (_i_)</sub> - _Z_<sub>R</sub> / 2  
+    &nbsp; &nbsp; _X_<sub>R</sub><sup>R</sup> = _X_<sub>R (_i_+_j_-1)</sub> + _Z_<sub>R</sub> / 2  
+    &nbsp; &nbsp; _Y_<sub>R</sub><sup>T</sup> = _Y_<sub>R (_k_)</sub> - _Z_<sub>R</sub> / 2  
+    &nbsp; &nbsp; _Y_<sub>R</sub><sup>B</sup> = _Y_<sub>R (_k_+_l_-1)</sub> + _Z_<sub>R</sub> / 2  
+The four corner coordinatets,  
+[ _X_<sub>R</sub><sup>L</sup> , _Y_<sub>R</sub><sup>T</sup> , _Z_<sub>R</sub> ]<sup>T</sup> ,  
+[ _X_<sub>R</sub><sup>R</sup> , _Y_<sub>R</sub><sup>T</sup> , _Z_<sub>R</sub> ]<sup>T</sup> ,  
+[ _X_<sub>R</sub><sup>L</sup> , _Y_<sub>R</sub><sup>B</sup> , _Z_<sub>R</sub> ]<sup>T</sup> ,  
+[ _X_<sub>R</sub><sup>R</sup> , _Y_<sub>R</sub><sup>B</sup> , _Z_<sub>R</sub> ]<sup>T</sup> ,  
+must satisfy the condition  
+[ _X_<sub>R</sub><sup>_xx_</sup> , _Y_<sub>R</sub><sup>_yy_</sup> , _Z_<sub>R</sub> ]<sup>T</sup> = [  
+    &nbsp; &nbsp; _&Alpha;_<sub>00</sub> , _&Alpha;_<sub>01</sub> , _&Alpha;_<sub>02</sub> ;  
+    &nbsp; &nbsp; _&Alpha;_<sub>10</sub> , _&Alpha;_<sub>11</sub> , _&Alpha;_<sub>12</sub> ;  
     &nbsp; &nbsp; 0 , 0 , 1 ;  
-] [ _X_<sub>p</sub> , _Y_<sub>p</sub> , _Z_<sub>p</sub> ]<sup>T</sup>
+] [ _X_<sub>P</sub><sup>_xx_</sup> , _Y_<sub>P</sub><sup>_yy_</sup> , _Z_<sub>P</sub> ]<sup>T</sup>  
+Expanding the equation,  
+<!-- X -->
+_X_<sub>R</sub><sup>_L_</sup> = _&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>TL</sup> +
+_&Alpha;_<sub>01</sub> _Y_<sub>P</sub><sup>TL</sup> + _&Alpha;_<sub>02</sub> _Z_<sub>P</sub> =
+_&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>TL</sup> +
+_&Alpha;_<sub>01</sub> _Y_<sub>P</sub><sup>TL</sup> + _&Alpha;_<sub>02</sub> _Z_<sub>R</sub> ,  
+_X_<sub>R</sub><sup>_R_</sup> = _&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>TR</sup> +
+_&Alpha;_<sub>01</sub> _Y_<sub>P</sub><sup>TR</sup> + _&Alpha;_<sub>02</sub> _Z_<sub>P</sub> =
+_&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>TR</sup> +
+_&Alpha;_<sub>01</sub> _Y_<sub>P</sub><sup>TR</sup> + _&Alpha;_<sub>02</sub> _Z_<sub>R</sub> ,  
+_X_<sub>R</sub><sup>_L_</sup> = _&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>BL</sup> +
+_&Alpha;_<sub>01</sub> _Y_<sub>P</sub><sup>BL</sup> + _&Alpha;_<sub>02</sub> _Z_<sub>P</sub> =
+ _&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>BL</sup> +
+_&Alpha;_<sub>01</sub> _Y_<sub>P</sub><sup>BL</sup> + _&Alpha;_<sub>02</sub> _Z_<sub>R</sub> ,  
+_X_<sub>R</sub><sup>_R_</sup> = _&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>BR</sup> +
+_&Alpha;_<sub>01</sub> _Y_<sub>P</sub><sup>BR</sup> + _&Alpha;_<sub>02</sub> _Z_<sub>P</sub> =
+_&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>BR</sup> +
+_&Alpha;_<sub>01</sub> _Y_<sub>P</sub><sup>BR</sup> + _&Alpha;_<sub>02</sub> _Z_<sub>R</sub> ,  
+<!-- Y -->
+_Y_<sub>R</sub><sup>_L_</sup> = _&Alpha;_<sub>10</sub> _X_<sub>P</sub><sup>TL</sup> +
+_&Alpha;_<sub>11</sub> _Y_<sub>P</sub><sup>TL</sup> + _&Alpha;_<sub>12</sub> _Z_<sub>P</sub> =
+_&Alpha;_<sub>10</sub> _X_<sub>P</sub><sup>TL</sup> +
+_&Alpha;_<sub>11</sub> _Y_<sub>P</sub><sup>TL</sup> + _&Alpha;_<sub>12</sub> _Z_<sub>R</sub> ,  
+_X_<sub>R</sub><sup>_R_</sup> = _&Alpha;_<sub>10</sub> _X_<sub>P</sub><sup>TR</sup> +
+_&Alpha;_<sub>11</sub> _Y_<sub>P</sub><sup>TR</sup> + _&Alpha;_<sub>12</sub> _Z_<sub>P</sub> =
+_&Alpha;_<sub>10</sub> _X_<sub>P</sub><sup>TR</sup> +
+_&Alpha;_<sub>11</sub> _Y_<sub>P</sub><sup>TR</sup> + _&Alpha;_<sub>12</sub> _Z_<sub>R</sub> ,  
+_X_<sub>R</sub><sup>_L_</sup> = _&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>BL</sup> +
+_&Alpha;_<sub>11</sub> _Y_<sub>P</sub><sup>BL</sup> + _&Alpha;_<sub>12</sub> _Z_<sub>P</sub> =
+ _&Alpha;_<sub>10</sub> _X_<sub>P</sub><sup>BL</sup> +
+_&Alpha;_<sub>11</sub> _Y_<sub>P</sub><sup>BL</sup> + _&Alpha;_<sub>12</sub> _Z_<sub>R</sub> ,  
+_X_<sub>R</sub><sup>_R_</sup> = _&Alpha;_<sub>10</sub> _X_<sub>P</sub><sup>BR</sup> +
+_&Alpha;_<sub>11</sub> _Y_<sub>P</sub><sup>BR</sup> + _&Alpha;_<sub>12</sub> _Z_<sub>P</sub> =
+_&Alpha;_<sub>10</sub> _X_<sub>P</sub><sup>BR</sup> +
+_&Alpha;_<sub>11</sub> _Y_<sub>P</sub><sup>BR</sup> + _&Alpha;_<sub>12</sub> _Z_<sub>R</sub> ,  
+<!-- Projection -->
+Converting projection coordinate to real coordinate,   
+_X_<sub>R</sub><sup>_L_</sup> / _Z_<sub>R</sub> =
+_&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>TL</sup> / _Z_<sub>R</sub> +
+_&Alpha;_<sub>01</sub> _Y_<sub>P</sub><sup>TL</sup> / _Z_<sub>R</sub> + _&Alpha;_<sub>02</sub>  
+<!-- x -->
+_x_<sub>R</sub><sup>_L_</sup> = _&Alpha;_<sub>00</sub> _x_<sub>P</sub><sup>TL</sup> +
+_&Alpha;_<sub>01</sub> _y_<sub>P</sub><sup>TL</sup> + _&Alpha;_<sub>02</sub>  
+_x_<sub>R</sub><sup>_R_</sup> = _&Alpha;_<sub>00</sub> _x_<sub>P</sub><sup>TR</sup> +
+_&Alpha;_<sub>01</sub> _y_<sub>P</sub><sup>TR</sup> + _&Alpha;_<sub>02</sub>  
+_x_<sub>R</sub><sup>_L_</sup> = _&Alpha;_<sub>00</sub> _x_<sub>P</sub><sup>BL</sup> +
+_&Alpha;_<sub>01</sub> _y_<sub>P</sub><sup>BL</sup> + _&Alpha;_<sub>02</sub>  
+_x_<sub>R</sub><sup>_R_</sup> = _&Alpha;_<sub>00</sub> _x_<sub>P</sub><sup>BR</sup> +
+_&Alpha;_<sub>01</sub> _y_<sub>P</sub><sup>BR</sup> + _&Alpha;_<sub>02</sub>  
+<!-- y -->
+_y_<sub>R</sub><sup>_L_</sup> = _&Alpha;_<sub>10</sub> _x_<sub>P</sub><sup>TL</sup> +
+_&Alpha;_<sub>11</sub> _y_<sub>P</sub><sup>TL</sup> + _&Alpha;_<sub>12</sub>  
+_y_<sub>R</sub><sup>_R_</sup> = _&Alpha;_<sub>10</sub> _x_<sub>P</sub><sup>TR</sup> +
+_&Alpha;_<sub>11</sub> _y_<sub>P</sub><sup>TR</sup> + _&Alpha;_<sub>12</sub>  
+_y_<sub>R</sub><sup>_L_</sup> = _&Alpha;_<sub>10</sub> _x_<sub>P</sub><sup>BL</sup> +
+_&Alpha;_<sub>11</sub> _y_<sub>P</sub><sup>BL</sup> + _&Alpha;_<sub>12</sub>  
+_y_<sub>R</sub><sup>_R_</sup> = _&Alpha;_<sub>10</sub> _x_<sub>P</sub><sup>BR</sup> +
+_&Alpha;_<sub>11</sub> _y_<sub>P</sub><sup>BR</sup> + _&Alpha;_<sub>12</sub>  
+<!-- Simultaneous equation -->
+[  
+    &nbsp; &nbsp; _x_<sub>P</sub><sup>TL</sup> , _y_<sub>p</sub><sup>TL</sup> , 1 , 0 , 0 , 0 ;  
+    &nbsp; &nbsp; _x_<sub>P</sub><sup>TR</sup> , _y_<sub>p</sub><sup>TR</sup> , 1 , 0 , 0 , 0 ;  
+    &nbsp; &nbsp; _x_<sub>P</sub><sup>BL</sup> , _y_<sub>p</sub><sup>BL</sup> , 1 , 0 , 0 , 0 ;  
+    &nbsp; &nbsp; _x_<sub>P</sub><sup>BR</sup> , _y_<sub>p</sub><sup>BR</sup> , 1 , 0 , 0 , 0 ;  
+    &nbsp; &nbsp; 0 , 0 , 0 , _x_<sub>P</sub><sup>TL</sup> , _y_<sub>p</sub><sup>TL</sup> , 1 ;   
+    &nbsp; &nbsp; 0 , 0 , 0 , _x_<sub>P</sub><sup>TR</sup> , _y_<sub>p</sub><sup>TR</sup> , 1 ;   
+    &nbsp; &nbsp; 0 , 0 , 0 , _x_<sub>P</sub><sup>BL</sup> , _y_<sub>p</sub><sup>BL</sup> , 1 ;   
+    &nbsp; &nbsp; 0 , 0 , 0 , _x_<sub>P</sub><sup>BR</sup> , _y_<sub>p</sub><sup>BR</sup> , 1 ;   
+] [ _&Alpha;_<sub>00</sub> , _&Alpha;_<sub>01</sub> , &Alpha;<sub>02</sub> ,
+_&Alpha;_<sub>10</sub> , _&Alpha;_<sub>11</sub> , &Alpha;<sub>12</sub> ]<sup>T</sup>  =  
+[ _x_<sub>R</sub><sup>L</sup> , _x_<sub>R</sub><sup>R</sup> ,
+_x_<sub>R</sub><sup>L</sup> , _x_<sub>R</sub><sup>R</sup> ,
+_y_<sub>R</sub><sup>L</sup> , _y_<sub>R</sub><sup>R</sup> ,
+_y_<sub>R</sub><sup>L</sup> , _y_<sub>R</sub><sup>R</sup> ]<sub>T</sub>  
+In ordinary computer graphics,
+_x_<sub>P</sub><sup>TL</sup> = -0.5 ,  
+_y_<sub>P</sub><sup>TL</sup> = -0.5 ,  
+_x_<sub>P</sub><sup>TR</sup> = W - 0.5 ,  
+_y_<sub>P</sub><sup>TR</sup> = -0.5 ,  
+_x_<sub>P</sub><sup>BL</sup> = -0.5 ,  
+_y_<sub>P</sub><sup>BL</sup> = H -0.5 ,  
+_x_<sub>P</sub><sup>BR</sup> = W - 0.5 ,  
+_y_<sub>P</sub><sup>BR</sup> = H -0.5 ,  
 
 ## Generic projection matrix consisting of intrinsic matrix and extrinsic matrix
 From the investigation of camera matrix, the intrinsic matrix is  

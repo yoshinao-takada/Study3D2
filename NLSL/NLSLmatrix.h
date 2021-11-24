@@ -79,6 +79,15 @@ void NLSLmatrix_inv(pcNLSLmatrix_t matA, pNLSLmatrix_t matAinv);
  * @param m [in] matrix
  */
 void NLSLmatrix_print(FILE* pf, pcNLSLmatrix_t m);
+
+/**
+ * @brief solve a linear equation by LMS. m * x = y
+ * 
+ * @param m [in] LHS coefficient matrix, rows >= columns
+ * @param y [in] RHS constant column vector
+ * @param x [in] solution must be allocated in advance.
+ */
+void NLSLmatrix_solve(pcNLSLmatrix_t m, pcNLSLmatrix_t y, pNLSLmatrix_t x);
 #ifdef __cplusplus
 }
 #endif

@@ -219,29 +219,6 @@ const float* P3M_tocameracoord(pcP3MCameraPosition_t cameraposition, float* mwor
     return result;
 }
 
-static float vpwidth(pcP3MCamera_t camera) {  return (camera->vpTR[0] - camera->vpBL[0]); }
-static float vpheight(pcP3MCamera_t camera) {  return (camera->vpTR[1] - camera->vpBL[1]); }
-static float vpwh(pcP3MCamera_t camera) { return vpwidth(camera) / vpheight(camera); }
-static float vphw(pcP3MCamera_t camera) { return vpheight(camera) / vpwidth(camera); }
-static float fovx(pcP3MCamera_t camera) { return camera->fov * ((camera->fovaxis == FOVaxis_x) ? 1.0f : vpwh(camera)); }
-static float fovy(pcP3MCamera_t camera) { return camera->fov * ((camera->fovaxis == FOVaxis_y) ? 1.0f : vphw(camera)); }
-static float half_fovx(pcP3MCamera_t camera) { return 0.5f * fovx(camera); }
-static float half_fovy(pcP3MCamera_t camera) { return 0.5f * fovy(camera); }
-
-const float* P3M_cameraintrinsics(pcP3MCamera_t camera, float* mwork)
-{
-    NLSL_FILLFLOATS(mwork, 0.0f, P3Mrows * P2Mcolumns);
-    float xpe = tanf(half_fovx(camera));
-    float xrd = xpe / (0.5f * vpwidth(camera));
-    float ype = tanf(half_fovy(camera));
-    float yrd = ype / (camera->vpTR[1] - 0.5f * (camera->vpBL[1] + camera->vpTR[1]));
-    mwork[0] = 1.0f / xrd;
-    mwork[2] = vpwidth(camera) / 2.0f;
-    mwork[5] = 1.0f / yrd;
-    mwork[6] = vpheight(camera) / 2.0f;
-    mwork[10] = 1.0f;
-    return mwork;
-}
 
 const float* P2M_inv(const float* matA, float* mwork)
 {
@@ -277,4 +254,12 @@ const float* P2M_mult(const float* matA, const float* matB, float* mwork)
         }
     }
     return mwork;
+}
+
+const float* P3VP2V_project(const float* mat, const float* vector, float* vwork)
+{
+    vwork[0] = mat[0] * vector[0] + mat[1] * vector[1] + mat[2] * vector[2] + mat[3] * vector[3];
+    vwork[1] = mat[4] * vector[0] + mat[5] * vector[1] + mat[6] * vector[2] + mat[7] * vector[3];
+    vwork[2] = mat[8] * vector[0] + mat[9] * vector[1] + mat[10] * vector[2] + mat[11] * vector[3];
+    return vwork;
 }

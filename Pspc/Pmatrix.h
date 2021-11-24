@@ -127,34 +127,6 @@ typedef const P3MCameraPosition_t *pcP3MCameraPosition_t;
  */
 const float* P3M_tocameracoord(pcP3MCameraPosition_t cameraposition, float* mwork);
 
-typedef enum {
-    FOVaxis_x,
-    FOVaxis_y
-} FOVaxis_t;
-
-typedef struct {
-    float vpBL[2]; // viewport bottom-left pixel coordinate
-    float vpTR[2]; // viewport top-right pixel coordinate
-    float fov; // vertical or horizontal angle of field-of-view
-    FOVaxis_t fovaxis; // FOV direction
-    float sn; // normalized skew factor
-} P3MCamera_t, *pP3MCamera_t;
-typedef const P3MCamera_t *pcP3MCamera_t;
-
-/**
- * @brief Calculate the conversion matrix from camera local coordinate to viewport
- * Camera local coordinate system
- *  Y+ axis: upward direction
- *  Z- axis: look-at line
- *  O: camera focal point = camera frustum top vertex
- * Reference image plane
- *  d = 1: distance from O
- * 
- * @param mwork [in] 3x4 homogeneous coordinate conversion matrix, which converts P3 space to P2 plane
- * @param camera [in] camera parameters
- */
-const float* P3M_cameraintrinsics(pcP3MCamera_t camera, float* mwork);
-
 /**
  * @brief invert matA which is a projection matrix in P2 space; i.e. 3x3 matrix
  * 
@@ -170,7 +142,7 @@ const float* P2M_inv(const float* matA, float* mwork);
  * @param matA [in] 3x3 matrix
  * @param vectorB [in] 3x1 column vector
  * @param vwork [in] work area to convert t return pointer
- * @return const float* is a resulted 3x1 column vectord
+ * @return const float* is a resulted 3x1 column vector
  */
 const float* P2MP2V_mult(const float* matA, const float* vectorB, float* vwork);
 
@@ -183,6 +155,16 @@ const float* P2MP2V_mult(const float* matA, const float* vectorB, float* vwork);
  * @return const float* product matA * matB
  */
 const float* P2M_mult(const float* matA, const float* matB, float* mwork);
+
+/**
+ * @brief project P3V vector to P2V vector multiplying by 3x4 matrix
+ * 
+ * @param mat [in] 3x4 matrix
+ * @param vector [in] vector in 3-D projection space
+ * @param vwork [in] work area to convert to 3x1 column vector
+ * @return const float* vector in 2-D projection space
+ */
+const float* P3VP2V_project(const float* mat, const float* vector, float* vwork);
 
 #define P3M_print(_out_, _caption_, _m_) if (_out_) { \
     fprintf(_out_, "%s, P3M:\n\t%f, %f, %f, %f\n\t%f, %f, %f, %f\n\t%f, %f, %f, %f\n\t%f, %f, %f, %f\n", (_caption_), \

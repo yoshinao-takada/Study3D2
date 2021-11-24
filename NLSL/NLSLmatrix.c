@@ -216,3 +216,24 @@ void NLSLmatrix_print(FILE* pf, pcNLSLmatrix_t m)
         elementPtr += m->columns;
     }
 }
+
+void NLSLmatrix_solve(pcNLSLmatrix_t m, pcNLSLmatrix_t y, pNLSLmatrix_t x)
+{
+    assert(m->rows >= m->columns);
+    assert(m->columns == x->rows);
+    assert(m->rows == y->rows);
+    assert(x->columns == y->columns);
+    size_t mtsize = m->rows * m->columns;
+    size_t mtmsize = m->columns * m->columns;
+    size_t mtysize = x->rows * x->columns;
+    float* work = (float*)calloc(mtsize + 2*mtmsize + mtysize, sizeof(float));
+    NLSLmatrix_t mt = { m->columns, m->rows, { work } }; // transpose(m)
+    NLSLmatrix_transpose(m, &mt);
+    NLSLmatrix_t mtm = { m->columns, m->columns, { work + mtsize }}; // mtm = mt * m
+    NLSLmatrix_mult(&mt, m, &mtm);
+    NLSLmatrix_t invmtm = { mtm.rows, mtm.columns, { work + mtsize + mtmsize }}; // invmtm = inv(mtm)
+    NLSLmatrix_inv(&mtm, &invmtm);
+    NLSLmatrix_t mty = { mt.rows, y->columns, { work + mtsize + 2*mtmsize }}; // mty = mt * y
+    NLSLmatrix_mult(&mt, y, &mty);
+    NLSLmatrix_mult(&invmtm, &mty, x);
+}
