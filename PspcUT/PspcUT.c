@@ -2,6 +2,7 @@
 int PvectorUT();
 int PmatrixUT();
 int solveUT();
+int PcameraUT();
 
 int main()
 {
@@ -18,6 +19,10 @@ int main()
         if (EXIT_SUCCESS != (err = solveUT()))
         {
             LOGERRORBREAK(stderr, __FILE__, __LINE__, "solveUT() = %d\n", err);
+        }
+        if (EXIT_SUCCESS != (err =PcameraUT()))
+        {
+            LOGERRORBREAK(stderr, __FILE__, __LINE__, "PcameraUT() = %d\n", err);
         }
     } while (0);
     return err;
