@@ -22,6 +22,7 @@ extern "C" {
  * @return const float* 
  */
 const float* P3V_add(const float* v0, const float* v1, float* vwork);
+const float* P2V_add(const float* v0, const float* v1, float* vwork);
 
 /**
  * @brief subraction of P3 vector
@@ -32,6 +33,7 @@ const float* P3V_add(const float* v0, const float* v1, float* vwork);
  * @return const float* 
  */
 const float* P3V_sub(const float* v0, const float* v1, float* vwork);
+const float* P2V_sub(const float* v0, const float* v1, float* vwork);
 
 /**
  * @brief dot product of two P3 vectors
@@ -107,8 +109,61 @@ const float* P3V_normalize(const float* v, float* vwork);
  */
 const float* P3V_orthogonalintersection(const float* p0, const float* dir, const float* p1, float* vwork);
 
+/**
+ * @brief alias of P3V_orthogonalintersection()
+ * 
+ * @param p0 
+ * @param dir 
+ * @param p1 
+ * @param vwork 
+ * @return const float* 
+ */
+extern const float* (*P3Vline_orthogonalintersection)(const float* p0, const float* dir, const float* p1, float* vwork);
+
+/**
+ * @brief draw a line orthogonal and crossing to a reference plane
+ * 
+ * @param p0 [in] a reference point of the reference plane
+ * @param normaldir [in] reference plane normal vector
+ * @param p1 [in] a point to draw the orthogonal line
+ * @param vwork [in] work area convert to const float* to return
+ * @return const float* P3 intersection point
+ */
+const float* P3Vplane_orthogonalintersection(const float* p0, const float* normaldir, const float* p1, float* vwork);
+
+/**
+ * @brief get an intersection coordinate of a plane and a line
+ * 
+ * @param p0plane [in] reference P3 point of a plane
+ * @param normaldir [in] reference P3 normal vector of a plane
+ * @param p0line [in] reference P3 point of a line
+ * @param dir [in] reference P3 direction vector of a line
+ * @param vwork [in] work area convert to a const float* to return, capacity = 4 * sizeof(float)
+ * @return const float* P3 coordinate of the intersection
+ */
+const float* P3Vplane_line_intersection
+(const float* p0plane, const float* normaldir, const float* p0line, const float* dir, float* vwork);
+
+/**
+ * @brief get an intersection coordinate of a triangle and a line
+ * 
+ * @param vertices [in] vertex coordinate table
+ * @param indices [in] CCW indices of the triangle. indices[0..2] point vertices[indices[0..2] * P3VSIZE];
+ * i.e. const float* ptr = vertices + indices[0] * P3VSIZE;// ptr[0]: x, ptr[1]: y, ptr[2]: z, ptr[3]: w of the triangle 1st vertex.
+ * @param p0line [in] a line reference point
+ * @param dir [in] a line direction vector
+ * @param vwork [in] work area convert to a const float* to return
+ * @return const float* NULL: no intersectoin was found, (const float*)vwork: coordinate of the intersection
+ */
+const float* P3Vtriangle_line_intersection
+(const float* vertices, const int* indices, const float* p0line, const float* dir, float* vwork);
+
+#pragma region diagnostic_util
 #define P3V_print(_out_, _caption_, _v_) fprintf(_out_, "%s, P3V:{ %f, %f, %f, %f }\n", (_caption_), \
     (_v_)[0], (_v_)[1], (_v_)[2], (_v_)[3] );
+#define P2V_print(_out_, _caption_, _v_) fprintf(_out_, "%s, P2V:{ %f, %f, %f }\n", (_caption_), \
+    (_v_)[0], (_v_)[1], (_v_)[2] );
+#pragma endregion diagnostic_util
 #ifdef __cplusplus
 }
 #endif

@@ -96,28 +96,27 @@ float half_fovy(pcP3MCamera_t camera);
  */
 const float* P3M_cameraintrinsics(pcP3MCamera_t camera, float* mwork);
 
-
 typedef struct {
-    float Pp[2]; //!< transformed R2 coordinate
-    float Pr[2]; //!< source R2 coordinate
-} R2PointHomology_t, *pR2PointHomology_t;
-typedef const R2PointHomology_t *pcR2PointHomology_t;
+    float PJ[3]; //!< transformed R2 coordinate
+    float PK[3]; //!< source R2 coordinate
+} P2PointHomology_t, *pP2PointHomology_t;
+typedef const P2PointHomology_t *pcP2PointHomology_t;
 
 typedef struct {
     int GridSize[2];
-    R2PointHomology_t points[0];
-} R2GridHomology_t, *pR2GridHomology_t;
-typedef const R2GridHomology_t *pcR2GridHomology_t;
+    P2PointHomology_t points[0];
+} P2GridHomology_t, *pP2GridHomology_t;
+typedef const P2GridHomology_t *pcP2GridHomology_t;
 
 /**
- * @brief Create a new instance of R2GridHomology_t.
+ * @brief Create a new instance of P2GridHomology_t.
  * 
  * @param xsize [in]
  * @param ysize [in]
  * @param ppobj [out]
  * @return int EXIT_SUCCESS: success, ENOMEM: fail in malloc()
  */
-int R2GridHomology_new(int xsize, int ysize, pR2GridHomology_t* ppobj);
+int P2GridHomology_new(int xsize, int ysize, pP2GridHomology_t* ppobj);
 
 /**
  * @brief get a pointer to an element at the selected point
@@ -125,9 +124,9 @@ int R2GridHomology_new(int xsize, int ysize, pR2GridHomology_t* ppobj);
  * @param grid [in] grid homology object
  * @param xindex [in] horizontal element selector
  * @param yindex [in] vertical element selector
- * @return pR2PointHomology_t is an element pointer
+ * @return pP2PointHomology_t is an element pointer
  */
-pR2PointHomology_t R2GridHomology_point(pR2GridHomology_t grid, int xindex, int yindex);
+pP2PointHomology_t P2GridHomology_point(pP2GridHomology_t grid, int xindex, int yindex);
 
 /**
  * @brief get a const pointer to an element at the selected point
@@ -135,9 +134,17 @@ pR2PointHomology_t R2GridHomology_point(pR2GridHomology_t grid, int xindex, int 
  * @param grid [in] grid homology object
  * @param xindex [in] horizontal element selector
  * @param yindex [in] vertical element selector
- * @return pcR2PointHomology_t is a const element pointer
+ * @return pcP2PointHomology_t is a const element pointer
  */
-pcR2PointHomology_t R2GridHomology_cpoint(pcR2GridHomology_t grid, int xindex, int yindex);
+pcP2PointHomology_t P2GridHomology_cpoint(pcP2GridHomology_t grid, int xindex, int yindex);
+
+/**
+ * @brief create 3x3 homogeneous matrix converting from Pr to Pp.
+ * 
+ * @param grid [in] point-to-point homology on grid points
+ * @return const float* 3x3 matrix
+ */
+const float* P2GridHomology_homographymatrix(pcP2GridHomology_t grid, float* mwork);
 #ifdef __cplusplus
 }
 #endif

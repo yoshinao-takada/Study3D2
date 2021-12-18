@@ -3,6 +3,7 @@ int PvectorUT();
 int PmatrixUT();
 int solveUT();
 int PcameraUT();
+int homographyUT();
 
 int main()
 {
@@ -23,6 +24,10 @@ int main()
         if (EXIT_SUCCESS != (err =PcameraUT()))
         {
             LOGERRORBREAK(stderr, __FILE__, __LINE__, "PcameraUT() = %d\n", err);
+        }
+        if (EXIT_SUCCESS != (err = homographyUT()))
+        {
+            LOGERRORBREAK(stderr, __FILE__, __LINE__, "homographyUT() = %d\n", err);
         }
     } while (0);
     return err;

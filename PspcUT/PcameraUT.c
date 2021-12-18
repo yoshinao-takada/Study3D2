@@ -60,6 +60,69 @@ static int GridHomologyUT()
 }
 #pragma endregion GENERAL_HOMOLOGY
 
+// homography matrix calculation using a triangle-triangle homology with their centroids
+#define EQLT0   10.0f, 0.0f, -1.0f
+#define EQLT1   0.0f, 10.0f, -1.0f
+#define EQLT2   0.0f, 0.0f, 9.0f
+#define EQLT3   0.0f, 0.0f, 0.0f
+#define ISRT0   0.0f, 0.0f, 1.0f
+#define ISRT1   1.0f, 0.0f, 1.0f
+#define ISRT2   0.0f, 1.0f, 1.0f
+#define ISRT3   1.0f, 1.0f, 1.0f
+#define HMT0    { { ISRT0 }, { EQLT0 } }
+#define HMT1    { { ISRT1 }, { EQLT1 } }
+#define HMT2    { { ISRT2 }, { EQLT2 } }
+#define HMT3    { { ISRT3 }, { EQLT3 } }
+static const P2PointHomology_t trianglehomologysrc[] = { HMT0, HMT1, HMT2, HMT3 };
+static float PKT[] = { EQLT0, EQLT1, EQLT2, EQLT3, 0.0f, -5.0f, 0.5f };
+static const float PJT[] = { ISRT0, ISRT1, ISRT2, ISRT3 };
+
+// set EQLT3
+void CompletePKT()
+{
+    float mwork[P3MSIZE];
+    float vwork[P3VSIZE];
+    static const float normal[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    static const float rotationCenter[] = { 10.0f, 0.0f, 10.0f, 2.0f };
+    static const float torotate[] = { EQLT1, 1.0f };
+    const float* mrot = P3M_rotateaboutaxis(4.0f * atanf(1.0f), rotationCenter, normal, mwork);
+    const float* newEQLT3 = P3MP3V_mult(mrot, torotate, vwork);
+    PKT[9] = newEQLT3[0] / newEQLT3[3];
+    PKT[10] = newEQLT3[1] / newEQLT3[3];
+    PKT[11] = newEQLT3[2] / newEQLT3[3];
+}
+
+static int TriangleAndCentroidUT()
+{
+    // 3-D space equilateral triangle
+    pP2GridHomology_t homologies = NULL;
+    int err = EXIT_SUCCESS;
+    float mPmat[P2MSIZE];
+    float vRpwork[P2VSIZE];
+    do {
+        CompletePKT();
+        if (EXIT_SUCCESS != (err = P2GridHomology_new(4, 1, &homologies)))
+        {
+            LOGERRORBREAK(stderr, __FILE__, __LINE__, "Fail in P2GridHomology_new()");
+        }
+        memcpy(homologies->points, trianglehomologysrc, sizeof(trianglehomologysrc));
+        homologies->points[3].PK[0] = PKT[9];
+        homologies->points[3].PK[1] = PKT[10];
+        homologies->points[3].PK[2] = PKT[11];
+        const float* pmat = P2GridHomology_homographymatrix(homologies, mPmat);
+        P2M_print(stderr, "pmat", pmat);
+        for (int i = 0; i < 5; i++)
+        {
+            float v_[3];
+            const float* v = P2MP2V_mult(pmat, PKT + i * 3, v_);
+            printf("{ %f, %f }\n", v[0]/v[2], v[1]/v[2]);
+        }
+    } while (0);
+    NLSL_SAFEFREE(&homologies);
+    LOGERROR(stderr, __FUNCTION__, __LINE__, "err = %d", err);
+    return err;
+}
+
 int PcameraUT()
 {
     int err = EXIT_SUCCESS;
@@ -67,6 +130,10 @@ int PcameraUT()
         if (EXIT_SUCCESS != (err = GridHomologyUT()))
         {
             LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "GridHomologyUT() failed");
+        }
+        if (EXIT_SUCCESS != (err = TriangleAndCentroidUT()))
+        {
+            LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "TriangleAndCentroidUT() failed");
         }
     } while (0);
     LOGERROR(stderr, __FUNCTION__, __LINE__, "err = %d", err);

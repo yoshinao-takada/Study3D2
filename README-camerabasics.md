@@ -61,61 +61,61 @@ must satisfy the condition
 ] [ _X_<sub>P</sub><sup>_xx_</sup> , _Y_<sub>P</sub><sup>_yy_</sup> , _Z_<sub>P</sub> ]<sup>T</sup>  
 Expanding the equation,  
 <!-- X -->
-_X_<sub>R</sub><sup>_L_</sup> = _&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>TL</sup> +
+_X_<sub>R</sub><sup>_TL_</sup> = _&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>TL</sup> +
 _&Alpha;_<sub>01</sub> _Y_<sub>P</sub><sup>TL</sup> + _&Alpha;_<sub>02</sub> _Z_<sub>P</sub> =
 _&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>TL</sup> +
 _&Alpha;_<sub>01</sub> _Y_<sub>P</sub><sup>TL</sup> + _&Alpha;_<sub>02</sub> _Z_<sub>R</sub> ,  
-_X_<sub>R</sub><sup>_R_</sup> = _&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>TR</sup> +
+_X_<sub>R</sub><sup>_TR_</sup> = _&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>TR</sup> +
 _&Alpha;_<sub>01</sub> _Y_<sub>P</sub><sup>TR</sup> + _&Alpha;_<sub>02</sub> _Z_<sub>P</sub> =
 _&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>TR</sup> +
 _&Alpha;_<sub>01</sub> _Y_<sub>P</sub><sup>TR</sup> + _&Alpha;_<sub>02</sub> _Z_<sub>R</sub> ,  
-_X_<sub>R</sub><sup>_L_</sup> = _&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>BL</sup> +
+_X_<sub>R</sub><sup>_BL_</sup> = _&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>BL</sup> +
 _&Alpha;_<sub>01</sub> _Y_<sub>P</sub><sup>BL</sup> + _&Alpha;_<sub>02</sub> _Z_<sub>P</sub> =
  _&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>BL</sup> +
 _&Alpha;_<sub>01</sub> _Y_<sub>P</sub><sup>BL</sup> + _&Alpha;_<sub>02</sub> _Z_<sub>R</sub> ,  
-_X_<sub>R</sub><sup>_R_</sup> = _&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>BR</sup> +
+_X_<sub>R</sub><sup>_BR_</sup> = _&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>BR</sup> +
 _&Alpha;_<sub>01</sub> _Y_<sub>P</sub><sup>BR</sup> + _&Alpha;_<sub>02</sub> _Z_<sub>P</sub> =
 _&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>BR</sup> +
 _&Alpha;_<sub>01</sub> _Y_<sub>P</sub><sup>BR</sup> + _&Alpha;_<sub>02</sub> _Z_<sub>R</sub> ,  
 <!-- Y -->
-_Y_<sub>R</sub><sup>_L_</sup> = _&Alpha;_<sub>10</sub> _X_<sub>P</sub><sup>TL</sup> +
+_Y_<sub>R</sub><sup>_TL_</sup> = _&Alpha;_<sub>10</sub> _X_<sub>P</sub><sup>TL</sup> +
 _&Alpha;_<sub>11</sub> _Y_<sub>P</sub><sup>TL</sup> + _&Alpha;_<sub>12</sub> _Z_<sub>P</sub> =
 _&Alpha;_<sub>10</sub> _X_<sub>P</sub><sup>TL</sup> +
 _&Alpha;_<sub>11</sub> _Y_<sub>P</sub><sup>TL</sup> + _&Alpha;_<sub>12</sub> _Z_<sub>R</sub> ,  
-_X_<sub>R</sub><sup>_R_</sup> = _&Alpha;_<sub>10</sub> _X_<sub>P</sub><sup>TR</sup> +
+_Y_<sub>R</sub><sup>_TR_</sup> = _&Alpha;_<sub>10</sub> _X_<sub>P</sub><sup>TR</sup> +
 _&Alpha;_<sub>11</sub> _Y_<sub>P</sub><sup>TR</sup> + _&Alpha;_<sub>12</sub> _Z_<sub>P</sub> =
 _&Alpha;_<sub>10</sub> _X_<sub>P</sub><sup>TR</sup> +
 _&Alpha;_<sub>11</sub> _Y_<sub>P</sub><sup>TR</sup> + _&Alpha;_<sub>12</sub> _Z_<sub>R</sub> ,  
-_X_<sub>R</sub><sup>_L_</sup> = _&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>BL</sup> +
+_Y_<sub>R</sub><sup>_BL_</sup> = _&Alpha;_<sub>10</sub> _X_<sub>P</sub><sup>BL</sup> +
 _&Alpha;_<sub>11</sub> _Y_<sub>P</sub><sup>BL</sup> + _&Alpha;_<sub>12</sub> _Z_<sub>P</sub> =
  _&Alpha;_<sub>10</sub> _X_<sub>P</sub><sup>BL</sup> +
 _&Alpha;_<sub>11</sub> _Y_<sub>P</sub><sup>BL</sup> + _&Alpha;_<sub>12</sub> _Z_<sub>R</sub> ,  
-_X_<sub>R</sub><sup>_R_</sup> = _&Alpha;_<sub>10</sub> _X_<sub>P</sub><sup>BR</sup> +
+_Y_<sub>R</sub><sup>_BR_</sup> = _&Alpha;_<sub>10</sub> _X_<sub>P</sub><sup>BR</sup> +
 _&Alpha;_<sub>11</sub> _Y_<sub>P</sub><sup>BR</sup> + _&Alpha;_<sub>12</sub> _Z_<sub>P</sub> =
 _&Alpha;_<sub>10</sub> _X_<sub>P</sub><sup>BR</sup> +
 _&Alpha;_<sub>11</sub> _Y_<sub>P</sub><sup>BR</sup> + _&Alpha;_<sub>12</sub> _Z_<sub>R</sub> ,  
 <!-- Projection -->
 Converting projection coordinate to real coordinate,   
-_X_<sub>R</sub><sup>_L_</sup> / _Z_<sub>R</sub> =
+_X_<sub>R</sub><sup>_TL_</sup> / _Z_<sub>R</sub> =
 _&Alpha;_<sub>00</sub> _X_<sub>P</sub><sup>TL</sup> / _Z_<sub>R</sub> +
 _&Alpha;_<sub>01</sub> _Y_<sub>P</sub><sup>TL</sup> / _Z_<sub>R</sub> + _&Alpha;_<sub>02</sub>  
 <!-- x -->
-_x_<sub>R</sub><sup>_L_</sup> = _&Alpha;_<sub>00</sub> _x_<sub>P</sub><sup>TL</sup> +
+_x_<sub>R</sub><sup>_TL_</sup> = _&Alpha;_<sub>00</sub> _x_<sub>P</sub><sup>TL</sup> +
 _&Alpha;_<sub>01</sub> _y_<sub>P</sub><sup>TL</sup> + _&Alpha;_<sub>02</sub>  
-_x_<sub>R</sub><sup>_R_</sup> = _&Alpha;_<sub>00</sub> _x_<sub>P</sub><sup>TR</sup> +
+_x_<sub>R</sub><sup>_TR_</sup> = _&Alpha;_<sub>00</sub> _x_<sub>P</sub><sup>TR</sup> +
 _&Alpha;_<sub>01</sub> _y_<sub>P</sub><sup>TR</sup> + _&Alpha;_<sub>02</sub>  
-_x_<sub>R</sub><sup>_L_</sup> = _&Alpha;_<sub>00</sub> _x_<sub>P</sub><sup>BL</sup> +
+_x_<sub>R</sub><sup>_BL_</sup> = _&Alpha;_<sub>00</sub> _x_<sub>P</sub><sup>BL</sup> +
 _&Alpha;_<sub>01</sub> _y_<sub>P</sub><sup>BL</sup> + _&Alpha;_<sub>02</sub>  
-_x_<sub>R</sub><sup>_R_</sup> = _&Alpha;_<sub>00</sub> _x_<sub>P</sub><sup>BR</sup> +
+_x_<sub>R</sub><sup>_BR_</sup> = _&Alpha;_<sub>00</sub> _x_<sub>P</sub><sup>BR</sup> +
 _&Alpha;_<sub>01</sub> _y_<sub>P</sub><sup>BR</sup> + _&Alpha;_<sub>02</sub>  
 <!-- y -->
-_y_<sub>R</sub><sup>_L_</sup> = _&Alpha;_<sub>10</sub> _x_<sub>P</sub><sup>TL</sup> +
+_y_<sub>R</sub><sup>_TL_</sup> = _&Alpha;_<sub>10</sub> _x_<sub>P</sub><sup>TL</sup> +
 _&Alpha;_<sub>11</sub> _y_<sub>P</sub><sup>TL</sup> + _&Alpha;_<sub>12</sub>  
-_y_<sub>R</sub><sup>_R_</sup> = _&Alpha;_<sub>10</sub> _x_<sub>P</sub><sup>TR</sup> +
+_y_<sub>R</sub><sup>_TR_</sup> = _&Alpha;_<sub>10</sub> _x_<sub>P</sub><sup>TR</sup> +
 _&Alpha;_<sub>11</sub> _y_<sub>P</sub><sup>TR</sup> + _&Alpha;_<sub>12</sub>  
-_y_<sub>R</sub><sup>_L_</sup> = _&Alpha;_<sub>10</sub> _x_<sub>P</sub><sup>BL</sup> +
+_y_<sub>R</sub><sup>_BL_</sup> = _&Alpha;_<sub>10</sub> _x_<sub>P</sub><sup>BL</sup> +
 _&Alpha;_<sub>11</sub> _y_<sub>P</sub><sup>BL</sup> + _&Alpha;_<sub>12</sub>  
-_y_<sub>R</sub><sup>_R_</sup> = _&Alpha;_<sub>10</sub> _x_<sub>P</sub><sup>BR</sup> +
+_y_<sub>R</sub><sup>_BR_</sup> = _&Alpha;_<sub>10</sub> _x_<sub>P</sub><sup>BR</sup> +
 _&Alpha;_<sub>11</sub> _y_<sub>P</sub><sup>BR</sup> + _&Alpha;_<sub>12</sub>  
 <!-- Simultaneous equation -->
 [  
@@ -129,10 +129,10 @@ _&Alpha;_<sub>11</sub> _y_<sub>P</sub><sup>BR</sup> + _&Alpha;_<sub>12</sub>
     &nbsp; &nbsp; 0 , 0 , 0 , _x_<sub>P</sub><sup>BR</sup> , _y_<sub>p</sub><sup>BR</sup> , 1 ;   
 ] [ _&Alpha;_<sub>00</sub> , _&Alpha;_<sub>01</sub> , &Alpha;<sub>02</sub> ,
 _&Alpha;_<sub>10</sub> , _&Alpha;_<sub>11</sub> , &Alpha;<sub>12</sub> ]<sup>T</sup>  =  
-[ _x_<sub>R</sub><sup>L</sup> , _x_<sub>R</sub><sup>R</sup> ,
-_x_<sub>R</sub><sup>L</sup> , _x_<sub>R</sub><sup>R</sup> ,
-_y_<sub>R</sub><sup>L</sup> , _y_<sub>R</sub><sup>R</sup> ,
-_y_<sub>R</sub><sup>L</sup> , _y_<sub>R</sub><sup>R</sup> ]<sub>T</sub>  
+[ _x_<sub>R</sub><sup>TL</sup> , _x_<sub>R</sub><sup>TR</sup> ,
+_x_<sub>R</sub><sup>BL</sup> , _x_<sub>R</sub><sup>BR</sup> ,
+_y_<sub>R</sub><sup>TL</sup> , _y_<sub>R</sub><sup>TR</sup> ,
+_y_<sub>R</sub><sup>BL</sup> , _y_<sub>R</sub><sup>BR</sup> ]<sub>T</sub>  
 In ordinary computer graphics,
 _x_<sub>P</sub><sup>TL</sup> = -0.5 ,  
 _y_<sub>P</sub><sup>TL</sup> = -0.5 ,  

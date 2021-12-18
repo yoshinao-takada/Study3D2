@@ -167,31 +167,6 @@ const float* P3M_rotateaboutaxis(float angle, const float* p0, const float* dir,
     result = P3M_mult(returnToOriginalAxis, P3M_mult(rotate, toRotationAxis, p[1]), mwork);
     return result;
 }
-// const float* P3M_rotateaboutaxis(
-// {
-//     const float* result = NULL;
-//     float* p = NULL;
-//     int selectedAxis = (int)AxisUndefined;
-//     float maxDotProduct = 0.0f;
-//     for (int axisIndex = 0; axisIndex != NLSL_ARRAYSIZE(CoordAxes); axisIndex++)
-//     {
-//         float dotProduct = P3V_dot(CoordAxes[axisIndex], dir);
-//         if (dotProduct > maxDotProduct)
-//         {
-//             maxDotProduct = dotProduct;
-//             selectedAxis = axisIndex;
-//         }
-//     }
-//     p = (float*)calloc(4 * P3Msize, sizeof(float));
-//     const float* moveP0 = P3M_transport(p0, OriginP3, p); // transport matrix from p0 to origin
-//     const float* alignDir = P3M_align(dir, CoordAxes[selectedAxis], p + P3Msize);
-//     const float* toCoordAxis = P3M_mult(alignDir, moveP0, p + 2 * P3Msize);
-//     const float* toCoordAxisInv = P3M_inv(toCoordAxis, p); // p was recycled.
-//     const float* rotator = Rotators[selectedAxis](angle, p + P3Msize); // p + P3Msize was recycled.
-//     result = P3M_mult(toCoordAxisInv, P3M_mult(rotator, toCoordAxis, p + 3 * P3Msize), mwork);
-//     free(p);
-//     return result;
-// }
 
 const float* P3M_tocameracoord(pcP3MCameraPosition_t cameraposition, float* mwork)
 {
@@ -219,7 +194,7 @@ const float* P3M_tocameracoord(pcP3MCameraPosition_t cameraposition, float* mwor
     return result;
 }
 
-
+#pragma region viewport_matrix
 const float* P2M_inv(const float* matA, float* mwork)
 {
     NLSLmatrix_t matA_ = { P2Mrows, P2Mcolumns, { matA } };
@@ -263,3 +238,4 @@ const float* P3VP2V_project(const float* mat, const float* vector, float* vwork)
     vwork[2] = mat[8] * vector[0] + mat[9] * vector[1] + mat[10] * vector[2] + mat[11] * vector[3];
     return vwork;
 }
+#pragma endregion viewport_matrix

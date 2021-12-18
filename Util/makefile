@@ -11,10 +11,10 @@ RELEASE_CC_FLAGS = -fPIE -c -O3 -DNDEBUG $(INCFLAGS) -std=c17
 DEBUG_TARGET = $(DEBUG_TARGET_DIR)/libUtil.a
 RELEASE_TARGET = $(RELEASE_TARGET_DIR)/libUtil.a
 DEBUG_OBJECTS = $(DEBUG_OBJECT_DIR)/imagelog.o $(DEBUG_OBJECT_DIR)/stopwatch.o \
-	$(DEBUG_OBJECT_DIR)/imagesource.o $(DEBUG_OBJECT_DIR)/costtablelog.o $(DEBUG_OBJECT_DIR)/histogram.o \
+	$(DEBUG_OBJECT_DIR)/histogram.o \
 	$(DEBUG_OBJECT_DIR)/FastHistogram.o
 RELEASE_OBJECTS = $(RELEASE_OBJECT_DIR)/imagelog.o $(RELEASE_OBJECT_DIR)/stopwatch.o \
-	$(RELEASE_OBJECT_DIR)/imagesource.o $(RELEASE_OBJECT_DIR)/costtablelog.o $(RELEASE_OBJECT_DIR)/histogram.o \
+	$(RELEASE_OBJECT_DIR)/histogram.o \
 	$(RELEASE_OBJECT_DIR)/FastHistogram.o
 
 # ---------------- debug -----------------
@@ -24,19 +24,11 @@ $(DEBUG_TARGET)	:	$(DEBUG_OBJECTS)
 	ar r $@ $^
 	ranlib $@
 
-$(DEBUG_OBJECT_DIR)/imagelog.o	:	imagelog.cpp imagelog.h
+$(DEBUG_OBJECT_DIR)/imagelog.o	:	imagelog.cpp imagelogC.h
 	mkdir -p $(DEBUG_OBJECT_DIR)
 	$(CC) $(DEBUG_CXX_FLAGS) -o $@ $<
 
 $(DEBUG_OBJECT_DIR)/stopwatch.o	:	stopwatch.cpp stopwatch.h
-	mkdir -p $(DEBUG_OBJECT_DIR)
-	$(CC) $(DEBUG_CXX_FLAGS) -o $@ $<
-
-$(DEBUG_OBJECT_DIR)/imagesource.o	:	imagesource.cpp imagesource.h
-	mkdir -p $(DEBUG_OBJECT_DIR)
-	$(CC) $(DEBUG_CXX_FLAGS) -o $@ $<
-
-$(DEBUG_OBJECT_DIR)/costtablelog.o	:	costtablelog.cpp costtablelog.h
 	mkdir -p $(DEBUG_OBJECT_DIR)
 	$(CC) $(DEBUG_CXX_FLAGS) -o $@ $<
 
@@ -60,19 +52,11 @@ $(RELEASE_TARGET)	:	$(RELEASE_OBJECTS)
 	ar r $@ $^
 	ranlib $@
 
-$(RELEASE_OBJECT_DIR)/imagelog.o	:	imagelog.cpp imagelog.h
+$(RELEASE_OBJECT_DIR)/imagelog.o	:	imagelog.cpp imagelogC.h
 	mkdir -p $(RELEASE_OBJECT_DIR)
 	$(CC) $(RELEASE_CXX_FLAGS) -o $@ $<
 
 $(RELEASE_OBJECT_DIR)/stopwatch.o	:	stopwatch.cpp stopwatch.h
-	mkdir -p $(RELEASE_OBJECT_DIR)
-	$(CC) $(RELEASE_CXX_FLAGS) -o $@ $<
-
-$(RELEASE_OBJECT_DIR)/imagesource.o	:	imagesource.cpp imagesource.h
-	mkdir -p $(RELEASE_OBJECT_DIR)
-	$(CC) $(RELEASE_CXX_FLAGS) -o $@ $<
-
-$(RELEASE_OBJECT_DIR)/costtablelog.o	:	costtablelog.cpp costtablelog.h
 	mkdir -p $(RELEASE_OBJECT_DIR)
 	$(CC) $(RELEASE_CXX_FLAGS) -o $@ $<
 

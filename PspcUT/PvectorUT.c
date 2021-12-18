@@ -182,6 +182,121 @@ static int Pvector_orthogonalintersection()
             LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "P3V_")
         }
     } while (0);
+    LOGERROR(stderr, __FUNCTION__, __LINE__, "err = %d", err);
+    return err;
+}
+
+static int Pvector_plane_orthogonalintersection()
+{
+    static const float p0[] = { 1.0f, -1.5f, 2.0f, 0.3f };
+    static const float normal[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    static const float p1[] = { -1.0f, -1.0f, 2.0f, 2.0f };
+    float work[P3VSIZE * 3];
+    int err = EXIT_SUCCESS;
+    do {
+        const float* intersection = P3Vplane_orthogonalintersection(p0, normal, p1, work);
+        const float* anotherNormal = P3V_sub(p1, intersection, work + P3VSIZE);
+        float normalDotAnotherNormal = P3V_dot(normal, anotherNormal);
+        float lengthProduct = sqrtf(P3V_dot(normal, normal) * P3V_dot(anotherNormal, anotherNormal));
+        if (!TESTEQUALF(fabsf(normalDotAnotherNormal), lengthProduct, testtol))
+        {
+            err = EXIT_FAILURE;
+            LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "P3V_")
+        }
+    } while (0);
+    LOGERROR(stderr, __FUNCTION__, __LINE__, "err = %d", err);
+    return err;
+}
+
+static int Pvector_point_is_in_plane(const float* point, const float* p0, const float* normal)
+{
+    float Vwork[P3VSIZE * 4];
+    const float* p0_point = P3V_sub(point, p0, Vwork);
+    float normalDotP0_point = P3V_dot(normal, p0_point);
+    return fabsf(normalDotP0_point) < testtol;
+}
+
+static int Pvector_plane_line_intersection()
+{
+    static const float p0[] = { 1.0f, 2.2f, -1.5f, 2.0f };
+    static const float normal[] = { 1.2f, 1.0f, -1.5f, 1.0f };
+    static const float p0line[][4] = {
+        { 1.5f, -1.5f, -1.5f, 1.0f },
+        { 2.2f, 2.5f, -1.0f, 2.0f }
+    };
+    static const float p0dir[][4] = {
+        { 1.0f, 1.0f, 1.0f, 1.0f },
+        { 2.2f, 2.5f, -1.5f, -2.0f }
+    };
+    int err = EXIT_SUCCESS;
+    float work[P3VSIZE * 3];
+    do {
+        for (int i = 0; i < 2; i++)
+        {
+            const float* intersection = P3Vplane_line_intersection(p0, normal, p0line[i], p0dir[i], work);
+            if (!Pvector_point_is_in_plane(intersection, p0, normal))
+            {
+                err = EXIT_FAILURE;
+                LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "intersection is not in the plane");
+            }
+        }
+    } while (0);
+    LOGERROR(stderr, __FUNCTION__, __LINE__, "err = %d", err);
+    return err;
+}
+
+static int Pvector_triangle_line_intersection()
+{
+    static const float vertices[] =
+    {
+        1.0f, 0.0f, 0.0f, 1.0f, // (1, 0, 0)
+        0.0f, 1.0f, 0.0f, 1.0f, // (0, 1, 0)
+        0.0f, 0.0f, 1.0f, 1.0f, // (0, 0, 1)
+        0.0f, -1.0f, 0.0f, 1.0f // (0, -1, 0)
+    };
+    static const int indices[][3] =
+    {
+        { 0, 1, 2 },
+        { 2, 3, 0 }
+    };
+    static const float p0[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    static const float dir0[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    static const float dir1[] = { 1.0f, -1.0f, 1.0f, 1.0f };
+    static const float dir2[] = { 1.0f, 0.0f, -0.1f, 1.0f };
+    static const float refp0[] = { 1.0f, 1.0f, 1.0f, 3.0f };
+    float work[P3VSIZE];
+    const float* intersection = NULL;
+    int err = EXIT_SUCCESS;
+    do {
+        intersection = P3Vtriangle_line_intersection(vertices, indices[0], p0, dir0, work);
+        if (!Pvector_point_is_in_plane(intersection, vertices, dir0))
+        {
+            err = EXIT_FAILURE;
+            P3V_print(stderr, "refp0", refp0);
+            P3V_print(stderr, "intersection0", intersection);
+            LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "dir0 intersection mismatch");
+        }
+        if (!TESTEQUALP3V(refp0, intersection, testtol))
+        {
+            err = EXIT_FAILURE;
+            P3V_print(stderr, "refp0", refp0);
+            P3V_print(stderr, "intersection0", intersection);
+            LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "dir0 intersection mismatch");
+        }
+        intersection = P3Vtriangle_line_intersection(vertices, indices[0], p0, dir1, work);
+        if (intersection)
+        {
+            err = EXIT_FAILURE;
+            LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "dir1 intersection was not NULL");
+        }
+        intersection = P3Vtriangle_line_intersection(vertices, indices[0], p0, dir2, work);
+        if (intersection)
+        {
+            err = EXIT_FAILURE;
+            LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "dir1 intersection was not NULL");
+        }
+    } while (0);
+    LOGERROR(stderr, __FUNCTION__, __LINE__, "err = %d", err);
     return err;
 }
 
@@ -203,7 +318,19 @@ int PvectorUT()
         }
         if (EXIT_SUCCESS != (err = Pvector_orthogonalintersection()))
         {
-            LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "Fail in Pvector_proj()");
+            LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "Fail in Pvector_orthogonalintersection()");
+        }
+        if (EXIT_SUCCESS != (err = Pvector_plane_orthogonalintersection()))
+        {
+            LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "Fail in Pvector_plane_orthogonalintersection()");
+        }
+        if (EXIT_SUCCESS != (err = Pvector_plane_line_intersection()))
+        {
+            LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "Fail in Pvector_plane_line_intersection()");
+        }
+        if (EXIT_SUCCESS != (err = Pvector_triangle_line_intersection()))
+        {
+            LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "Fail in Pvector_plane_line_intersection()");
         }
     } while (0);
     LOGERROR(stderr, __FUNCTION__, __LINE__, "err = %d", err);

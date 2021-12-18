@@ -26,11 +26,17 @@ extern "C" {
     (fabsf(var0 + var1) < tol) ? TESTEQUALF0(var0 + tol, var1 + tol, tol) : TESTEQUALF0(var0, var1, tol))
 
 #define TESTEQUALP3V(v0, v1, tol) ( \
-    TESTEQUALF(v0[0]/v0[3], v1[0]/v1[3], tol) && TESTEQUALF(v0[1]/v0[3], v1[1]/v1[3], tol) && \
-    TESTEQUALF(v0[2]/v0[3], v1[2]/v1[3], tol))
+    TESTEQUALF((v0)[0]/(v0)[3], (v1)[0]/(v1)[3], tol) && TESTEQUALF((v0)[1]/(v0)[3], (v1)[1]/(v1)[3], tol) && \
+    TESTEQUALF((v0)[2]/(v0)[3], (v1)[2]/(v1)[3], tol))
 
 #define TESTEQUALP2V(v0, v1, tol) ( \
-    TESTEQUALF(v0[0]/v0[2], v1[0]/v1[2], tol) && TESTEQUALF(v0[1]/v0[2], v1[1]/v1[2], tol))
+    TESTEQUALF((v0)[0]/(v0)[2], (v1)[0]/(v1)[2], tol) && TESTEQUALF((v0)[1]/(v0)[2], (v1)[1]/(v1)[2], tol))
+
+#define TESTEQUALR3V(v0, v1, tol) ( \
+    TESTEQUALF((v0)[0], (v1)[0], tol) && TESTEQUALF((v0)[1], (v1)[1], tol) && TESTEQUALF((v0)[2], (v1)[2], tol))
+
+#define TESTEQUALR2V(v0, v1, tol) ( \
+    TESTEQUALF((v0)[0], (v1)[0], tol) && TESTEQUALF((v0)[1], (v1)[1], tol))
 #ifdef __cplusplus
 }
 #endif

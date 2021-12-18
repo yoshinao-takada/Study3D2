@@ -6,6 +6,18 @@
         "testutils.h": "c",
         "pmatrix.h": "c",
         "math.h": "c",
-        "pvector.h": "c"
+        "pvector.h": "c",
+        "imagelogc.h": "c",
+        "array": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "utility": "cpp",
+        "atomic": "cpp",
+        "cstdint": "cpp",
+        "filesystem": "cpp",
+        "texture.h": "c",
+        "libc-header-start.h": "c",
+        "nlslmatrix.h": "c",
+        "homography.h": "c"
     }
 }
