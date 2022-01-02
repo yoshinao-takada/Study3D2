@@ -1,6 +1,8 @@
 #include "Render/projection.h"
 #include "Util/testutils.h"
 #include "Util/imagelogC.h"
+#include "Pspc/Pvector.h"
+#include "NLSL/NLSLmatrix.h"
 #include <memory.h>
 #ifndef ARRAYSIZE
 #define ARRAYSIZE(_a_) (sizeof(_a_) / sizeof((_a_)[0]))
@@ -65,6 +67,8 @@ static int InitMesh()
 #pragma region define_texture
 static ImageC_t textureSource = NULLIMAGE_C;
 static MeshTextureMapperConf_t texMapperConf = NULL_MESHTEXTUREMAPPERCONF;
+static MeshTextureMapper_t mapper = NULL_MESHTEXTUREMAPPER;
+static TextureInterpolator_t interpolator = NULLTEXTUREINTERPOLATOR_C;
 
 static int InitTexture()
 {
@@ -98,18 +102,28 @@ static int InitTexture()
             texCoords += 2;
             ptrTri += 3;
         }
+        if (EXIT_SUCCESS != (err = TextureInterpolator_init(&interpolator, &textureSource)))
+        {
+            LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "err = %d", err);
+        }
+        if (EXIT_SUCCESS != (err = MeshTextureMapper_new(&mapper, &mesh, &texMapperConf, &interpolator)))
+        {
+            LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "err = %d", err);
+        }
     } while (0);
     LOGERROR(stderr, __FUNCTION__, __LINE__, "err = %d", err);
     return err;
 }
 #pragma endregion define_texture
-static pCamera2_t camera = (pCamera2_t)NULL;
-static pCamera2Conf_t cameraConf = (pCamera2Conf_t)NULL;
-static pP3MCameraPosition_t cameraPosition = (pP3MCameraPosition_t)NULL;
 static ImageC_t renderTarget = NULLIMAGE_C;
 #define RENDER_WIDTH    640
 #define RENDER_HEIGHT   480
-#define RENDER_FOCALLEN 
+#define RENDER_FOCALLEN 22.0e-3f
+#define CAMERAPOS   { 1.0f, 1.0f, 1.0f, 1.0f }
+#define LOOKAT      { 0.0f, 0.0f, -1.0f, 1.0f }
+static float matProj[P2VSIZE * P3VSIZE];
+static P3MCameraPosition_t cameraPos = { 0.0f, CAMERAPOS, LOOKAT };
+static const Camera35mmConf_t cameraConf = { { RENDER_WIDTH, RENDER_HEIGHT }, RENDER_FOCALLEN };
 
 static void Cleanup()
 {
@@ -127,24 +141,18 @@ static float EquivalentFocalLength(float width, float height)
     return diagonal * equivalentForcalLength35mm / diagonal35mm;
 }
 
-void InitCamera()
+static void InitMatProj()
 {
-    cameraConf->vpBL[0] = 0.0f;
-    cameraConf->vpBL[1] = RENDER_HEIGHT;
-    cameraConf->vpTR[0] = RENDER_WIDTH;
-    cameraConf->vpTR[1] = 0.0f;
-    cameraConf->vpFL = EquivalentFocalLength(cameraConf->vpTR[0], cameraConf->vpBL[1]);
-    cameraPosition->position[0] = 1.0f;
-    cameraPosition->position[1] = 1.0f;
-    cameraPosition->position[2] = 1.0f;
-    cameraPosition->position[3] = 1.0f;
-    cameraPosition->lookat[0] = 0.0f;
-    cameraPosition->lookat[1] = 0.0f;
-    cameraPosition->lookat[2] = -1.0f;
-    cameraPosition->lookat[3] = 1.0f;
-    cameraPosition->rotAng = 0.0f;
-    Camera2_update(camera);
+    float matIntrin[P2VSIZE * P3VSIZE], matExtrin[P3MSIZE];
+    NLSLmatrix_t matIntrin_ = { P2VSIZE, P3VSIZE, { matIntrin } };
+    NLSLmatrix_t matExtrin_ = { P3VSIZE, P3VSIZE, { matExtrin } };
+    NLSLmatrix_t matProj_ = { P2VSIZE, P3VSIZE, { matProj } };
+    Camera35mmConf_mat(&cameraConf, matIntrin);
+    P3M_tocameracoord(&cameraPos, matExtrin);
+    NLSLmatrix_mult(&matIntrin_, &matExtrin_, &matProj_);
 }
+
+static Scene_t scene = { NULL, NULL, NULL, NULL, NULL };
 
 int projectionUT()
 {
@@ -157,18 +165,41 @@ int projectionUT()
         {
             LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "err = %d", err);
         }
-        if (!(camera = Camera2_new()))
+        InitMatProj();
+        ImageC_New(&renderTarget, renderSize, renderRoi);
+        for (int row = 0; row != RENDER_HEIGHT; row++)
         {
-            err = ENOMEM;
+            for (int col = 0; col != RENDER_WIDTH; col++)
+            {
+                float p0[P3VSIZE], dir[P3VSIZE];
+                float vpcoord[] = { (float)col, (float)row };
+                CameraViewline(matProj, vpcoord, &cameraPos, p0, dir);
+                int linearIndex = col + row * renderTarget.size[0];
+                float* renderTargetPixel = renderTarget.elements + linearIndex;
+                MeshCrossInfo_t crossinfo;
+                if (Mesh_cross(&mesh, p0, dir, &crossinfo)) continue;
+                MeshTextureMapper_get(&mapper, &crossinfo, renderTargetPixel);
+            }
+        }
+        ImageLog_ShowImageRange(&renderTarget, 0.0f, 1.0f);
+        scene.geometryModel = &mesh;
+        scene.texture = &textureSource;
+        scene.texConf = &texMapperConf;
+        scene.cameraConf = &cameraConf;
+        cameraPos.position[0] = -2.0f;
+        cameraPos.position[1] = 0.0f;
+        cameraPos.position[2] = 0.3f;
+        scene.cameraPosition = &cameraPos;
+
+        ImageC_Delete(&renderTarget);
+        if (EXIT_SUCCESS != (err = Projection_render(&scene, &renderTarget)))
+        {
             LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "err = %d", err);
         }
-        cameraConf = Camera2_conf(camera);
-        cameraPosition = Camera2_position(camera);
-        InitCamera();
-        ImageC_New(&renderTarget, renderSize, renderRoi);
         ImageLog_ShowImageRange(&renderTarget, 0.0f, 1.0f);
     } while (0);
     LOGERROR(stderr, __FUNCTION__, __LINE__, "err = %d", err);
     Cleanup();
     return err;
 }
+

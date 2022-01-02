@@ -18,13 +18,6 @@ typedef const Camera35mmConf_t *pcCamera35mmConf_t;
  */
 void Camera35mmConf_mat(pcCamera35mmConf_t camera, float* intrin3x4);
 
-// typedef struct {
-//     float size[2]; // image size counted in pixels
-//     float FOVy;
-//     float sizeN[2]; // frustum near Z-plane size
-// } CameraGLFrustumConf_t, *pCameraGLFrustumConf_t;
-// typedef const CameraGLFrustumConf_t *pcCameraGLFrustumConf_t;
-
 /**
  * @brief get a viewline corresponding to a viewport coordinate
  * 
