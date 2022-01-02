@@ -1,5 +1,0 @@
-clang -o ../debug/RenderUT.exe ../debug/o/RenderUT.o ../debug/o/meshUT.o ../debug/o/textureUT.o -L../debug -lRender -lPspc -lZnccC -lNLSL -lUtil -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lopencv_core -lstdc++ -lm
-/usr/bin/ld: ../debug/o/textureUT.o: in function `textureInitUT':
-/home/yoshinao/REPOS/Study3D2/RenderUT/textureUT.c:19: undefined reference to `ImageLog_ShowImageRange'
-clang-11: error: linker command failed with exit code 1 (use -v to see invocation)
-make: *** [makefile:21: ../debug/RenderUT.exe] Error 1

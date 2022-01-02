@@ -10,7 +10,7 @@ character | description
 --|--
 C | in camera coordinate
 P | in unit projection coordinate
-R | in image sensor coordinate
+R | in viewport coordinate
 W | in world coordinate
 <br>
 
@@ -23,8 +23,10 @@ C | center
 O | origin
 <br>
 
-__P__ = [ _X_ , _Y_ , _Z_ ]<sup>T</sup> : point in homogeneous coordinate  
-__p__ = [ _x_, _y_ , _z_ ]<sup>T</sup> : point in real coordinate
+__P__ = [ _X_ , _Y_ , _Z_ ]<sup>T</sup> : point in 2D homogeneous coordinate  
+__P__ = [ _X_ , _Y_ , _Z_ , _W_ ]<sup>T</sup> : point in 3D homogeneous coordinate  
+__p__ = [ _x_, _y_ ]<sup>T</sup> : point in 2D real coordinate  
+__p__ = [ _x_, _y_ , _z_ ]<sup>T</sup> : point in 3D real coordinate
 
 ## Projection matrix from camera coordinate to viewport coordinate
 __P__<sub>C</sub> , homogeneous camera coordinate is transformed to __P__<sub>P</sub> by  
@@ -225,3 +227,25 @@ _P_<sub>12</sub> _z_<sub>W</sub> + _P_<sub>13</sub> - _y_<sub>R</sub> (
     _P_<sub>20</sub> _x_<sub>W</sub> + _P_<sub>21</sub> _y_<sub>W</sub> +
 _P_<sub>22</sub> _z_<sub>W</sub> )  
 
+## Render Target Pixel Coordinate to a Line in World Coordinate
+[ _X_<sub>R</sub> , _Y_<sub>R</sub> , _Z_<sub>R</sub> ]<sup>T</sup> = 
+P<sub>I</sub> P<sub>0</sub> P<sub>E</sub> [ _x_<sub>W</sub> , _y_<sub>W</sub> , _z_<sub>W</sub> , 1 ]<sup>T</sup>  
+= [  
+&nbsp; &nbsp;_P_<sub>00</sub> _x_<sub>W</sub> + _P_<sub>01</sub> _y_<sub>W</sub> + _P_<sub>02</sub> _z_<sub>W</sub> + _P_<sub>03</sub> ;  
+&nbsp; &nbsp;_P_<sub>10</sub> _x_<sub>W</sub> + _P_<sub>11</sub> _y_<sub>W</sub> + _P_<sub>12</sub> _z_<sub>W</sub> + _P_<sub>13</sub> ;  
+&nbsp; &nbsp;_P_<sub>20</sub> _x_<sub>W</sub> + _P_<sub>21</sub> _y_<sub>W</sub> + _P_<sub>22</sub> _z_<sub>W</sub> + _P_<sub>23</sub> ;  
+]  
+_x_<sub>R</sub> = _X_<sub>R</sub> / _Z_<sub>R</sub> =
+(_P_<sub>00</sub> _x_<sub>W</sub> + _P_<sub>01</sub> _y_<sub>W</sub> + _P_<sub>02</sub> _z_<sub>W</sub> + _P_<sub>03</sub>) /
+(_P_<sub>20</sub> _x_<sub>W</sub> + _P_<sub>21</sub> _y_<sub>W</sub> + _P_<sub>22</sub> _z_<sub>W</sub> + _P_<sub>23</sub>)  
+_y_<sub>R</sub> = _Y_<sub>R</sub> / _Z_<sub>R</sub> =
+(_P_<sub>10</sub> _x_<sub>W</sub> + _P_<sub>11</sub> _y_<sub>W</sub> + _P_<sub>12</sub> _z_<sub>W</sub> + _P_<sub>13</sub>) /
+(_P_<sub>20</sub> _x_<sub>W</sub> + _P_<sub>21</sub> _y_<sub>W</sub> + _P_<sub>22</sub> _z_<sub>W</sub> + _P_<sub>23</sub>)  
+Once a pixel coordinate (_x_<sub>R</sub> , _y_<sub>R</sub>) is given, two plane is defined as  
+_x_<sub>W</sub> (_P_<sub>00</sub> - _x_<sub>R</sub> _P_<sub>20</sub>) +
+_y_<sub>W</sub> (_P_<sub>01</sub> - _x_<sub>R</sub> _P_<sub>21</sub>) +
+_z_<sub>W</sub> (_P_<sub>02</sub> - _x_<sub>R</sub> _P_<sub>22</sub>) = 0 ;  
+_x_<sub>W</sub> (_P_<sub>10</sub> - _y_<sub>R</sub> _P_<sub>20</sub>) +
+_y_<sub>W</sub> (_P_<sub>11</sub> - _y_<sub>R</sub> _P_<sub>21</sub>) +
+_z_<sub>W</sub> (_P_<sub>12</sub> - _y_<sub>R</sub> _P_<sub>22</sub>) = 0 ;  
+The intersection of the planes is the viewline corrensponding to the pixel coord (_x_<sub>R</sub> , _y_<sub>R</sub>) .  

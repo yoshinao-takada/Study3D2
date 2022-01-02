@@ -18,6 +18,10 @@
         "texture.h": "c",
         "libc-header-start.h": "c",
         "nlslmatrix.h": "c",
-        "homography.h": "c"
+        "homography.h": "c",
+        "pcamera2.h": "c",
+        "stdlib.h": "c",
+        "pcamera.h": "c",
+        "pcamera0.h": "c"
     }
 }

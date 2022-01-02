@@ -1,6 +1,8 @@
 #include "Render/mesh.h"
 #include "Pspc/Pvector.h"
 #include "Pspc/Pmatrix.h"
+#include "Pspc/homography.h"
+#include "Render/texture.h"
 #include <assert.h>
 #include <errno.h>
 #include <memory.h>
@@ -38,114 +40,10 @@ void Mesh_delete(pMesh_t mesh)
     }
 }
 
-// Get a rotationally symmetrical point of a vertex of a triangle
-// P3V_Trivert[0] is ratated against the center of P3V_TriVert[1] and [2] by 180 degrees
-// rotation axis is cross(P3V_TriVert[1] - P3V_TriVert[0], P3V_TriVert[2] - P3V_TriVert[0]).
-const float* RotationallySymmetricalPoint(const float* P3V_TriVert[], float* P3Vwork)
-{
-    static const float pi = __f32 (3.141592653589793238462643383279502884);
-    float rotcenter[P3VSIZE], rotaxis[P3VSIZE], rotmat[P3MSIZE], vert1_vert0[P3VSIZE], vert2_vert0[P3VSIZE];
-    // center of vert[1] and vert[2]
-    P3V_add(P3V_TriVert[1], P3V_TriVert[2], rotcenter);
-    rotcenter[3] *= 2.0f;
-
-    // rotation axis
-    P3V_sub(P3V_TriVert[1], P3V_TriVert[0], vert1_vert0); // vert[1] - vert[0]
-    P3V_sub(P3V_TriVert[2], P3V_TriVert[0], vert2_vert0); // vert[2] - vert[0]
-    P3V_cross(vert1_vert0, vert2_vert0, rotaxis);
-
-    // create the rotation matrix
-    P3M_rotateaboutaxis(pi, rotcenter, rotaxis, rotmat);
-
-    // rotate vert[1]
-    return P3MP3V_mult(rotmat, P3V_TriVert[0], P3Vwork);
-}
-
-// Prerequisite 1: Assuming triangle vertices numbered CCW 0, 1, 2
-// Step 1: make two paralleograms adding vertex 3s by adding a 180 degs rotationary symmetrical point of vertex 1s.
-// Step 2: create a homology struct
-// Step 3: calculate homography matrix
-const float* Mesh_calchomography(
-    const int32_t* vertIndices, const float* vertP3, const float* vertTextureP2, float* mwork
-) {
-    pP2GridHomology_t homologies = NULL;
-    int err = EXIT_SUCCESS;
-    const float* trivert[3];
-    float newvert[P3VSIZE];
-    float P3Vtexturework[3 * P3VSIZE];
-    const float* retptr = NULL;
-    do {
-        // Step 1:
-        if (EXIT_SUCCESS != (err = P2GridHomology_new(2,2,&homologies)))
-        {
-            break;
-        }
-
-        // Step 2:
-        // Step 2.1: make a parallelogram for 3D space vertices
-        trivert[0] = vertP3 + P3VSIZE * vertIndices[0];
-        trivert[1] = vertP3 + P3VSIZE * vertIndices[1];
-        trivert[2] = vertP3 + P3VSIZE * vertIndices[2];
-        RotationallySymmetricalPoint(trivert, newvert);
-        for (int i = 0; i < 3; i++)
-        {
-            homologies->points[i].PJ[0] = trivert[i][0];
-            homologies->points[i].PJ[1] = trivert[i][1];
-            homologies->points[i].PJ[2] = trivert[i][2];
-        }
-        homologies->points[3].PJ[0] = newvert[0];
-        homologies->points[3].PJ[1] = newvert[1];
-        homologies->points[3].PJ[2] = newvert[2];
-
-        // Step 2.2: make a parallelo
-        memcpy(P3Vtexturework, vertTextureP2 + P2VSIZE * vertIndices[0], P2VSIZE * sizeof(float));
-        memcpy(P3Vtexturework + P3VSIZE, vertTextureP2 + P2VSIZE * vertIndices[1], P2VSIZE * sizeof(float));
-        memcpy(P3Vtexturework + 2 * P3VSIZE, vertTextureP2 + P2VSIZE * vertIndices[2], P2VSIZE * sizeof(float));
-        trivert[0] = P3Vtexturework;
-        trivert[1] = trivert[0] + P3VSIZE;
-        trivert[2] = trivert[0] + P3VSIZE;
-        RotationallySymmetricalPoint(trivert, newvert);
-        for (int i = 0; i < 3; i++)
-        {
-            homologies->points[i].PK[0] = trivert[i][0];
-            homologies->points[i].PK[1] = trivert[i][1];
-            homologies->points[i].PK[2] = trivert[i][2];
-        }
-        homologies->points[3].PK[0] = newvert[0];
-        homologies->points[3].PK[1] = newvert[1];
-        homologies->points[3].PK[2] = newvert[2];
-
-        // Step 3: calculate homography matrix
-        retptr = P2GridHomology_homographymatrix(homologies, mwork);
-    } while(0);
-    return retptr;
-}
-
-void Mesh_calc_mP2VertToTexture(pMesh_t mesh)
-{
-    for (int itri = 0; itri != mesh->ntri; itri++)
-    {
-        const int32_t *vertIndices = mesh->indices + 3 * itri;
-        float* matHomography = mesh->mP2VertToTexture + P3MSIZE * itri;
-        Mesh_calchomography(vertIndices, mesh->vertices , mesh->texture, matHomography);
-    }
-}
-
-int Mesh_nfloats(pcMesh_t mesh)
-{
-    return mesh->nvert * (P3VSIZE + P2VSIZE);
-}
-
-int Mesh_nints(pcMesh_t mesh)
-{
-    return mesh->ntri * 3;
-}
-
 void Mesh_transform(pcMesh_t src, pMesh_t dst, const float* mat)
 {
     assert(src->ntri == dst->ntri);
     assert(src->nvert == dst->nvert);
-    memcpy(dst->texture, src->texture, P2VSIZE * src->nvert * sizeof(float));
     memcpy(dst->indices, src->indices, src->ntri * 3 * sizeof(int32_t));
     const float* srcptr = src->vertices;
     float* dstptr = dst->vertices;
@@ -155,7 +53,6 @@ void Mesh_transform(pcMesh_t src, pMesh_t dst, const float* mat)
         srcptr += P3VSIZE;
         dstptr += P3VSIZE;
     }
-    Mesh_calc_mP2VertToTexture(dst); // update conversion matrices
 }
 
 int Mesh_cross(pcMesh_t mesh, const float* p0, const float* dir, pMeshCrossInfo_t crossInfo)
@@ -163,32 +60,140 @@ int Mesh_cross(pcMesh_t mesh, const float* p0, const float* dir, pMeshCrossInfo_
     int err = EXIT_FAILURE;
     do {
         crossInfo->mesh = mesh;
-        crossInfo->indices = mesh->indices;
         const int* indexptr = mesh->indices;
-        for (int itri = 0; itri != mesh->ntri; itri++)
+        const int32_t* indices = mesh->indices;
+        for (crossInfo->itri = 0; crossInfo->itri != mesh->ntri; crossInfo->itri++)
         {
             const float* intersection = P3Vtriangle_line_intersection(
-                mesh->vertices, crossInfo->indices, p0, dir, crossInfo->intersection);
+                mesh->vertices, indices, p0, dir, crossInfo->intersection);
             if (intersection)
             {
                 err = EXIT_SUCCESS;
                 break;
             }
-            crossInfo->indices += 3;
+            indices += 3;
         }
     } while (0);
     return err;
 }
 
-int Mesh_texture(pcMesh_t mesh, pcMeshCrossInfo_t crossInfo, pcTextureInterpolator_t texture, float* value)
+void MeshCrossInfo_show(FILE* out, pcMeshCrossInfo_t crossInfo)
+{
+    fprintf(out, "intersection = { %f, %f, %f, %f }\n",
+        crossInfo->intersection[0], crossInfo->intersection[1], crossInfo->intersection[2],
+        crossInfo->intersection[3]);
+    fprintf(out, "itri = %d\n", crossInfo->itri);
+    const int32_t* triIndices = crossInfo->mesh->indices + crossInfo->itri * 3;
+    for (int i = 0; i < 3; i++)
+    {
+        const float* vert = crossInfo->mesh->vertices + P3VSIZE * triIndices[i];
+        fprintf(out, "vert[%d] = { %f, %f, %f, %f }\n", i, vert[0], vert[1], vert[2], vert[3]);
+    }
+    fprintf(out, " --- \n");
+}
+
+int MeshTextureMapperConf_new(pMeshTextureMapperConf_t conf, pcMesh_t mesh)
 {
     int err = EXIT_SUCCESS;
-    pP2GridHomology_t textureHomologies = NULL;
     do {
-        if (EXIT_SUCCESS != (err = P2GridHomology_new(4, 1, &textureHomologies)))
+        if (conf->nface == mesh->ntri)
         {
             break;
         }
+        else if (conf->nface && conf->textureCoords)
+        {
+            MeshTextureMapperConf_delete(conf);
+        }
+        if (((float*)NULL) == (conf->textureCoords = (float*)calloc(mesh->ntri * 3 * R2VSIZE, sizeof(float))))
+        {
+            err = ENOMEM;
+            break;
+        }
+        conf->nface = mesh->ntri;
     } while (0);
     return err;
+}
+
+void MeshTextureMapperConf_delete(pMeshTextureMapperConf_t conf)
+{
+    if (conf && conf->textureCoords)
+    {
+        free(conf->textureCoords);
+        conf->textureCoords = (float*)NULL;
+        conf->nface = 0;
+    }
+}
+
+static void MeshTextureMapper_init(pMeshTextureMapper_t mapper, pcMeshTextureMapperConf_t conf, pcMesh_t mesh,
+    const float* texturesize
+) {
+    static const int hsize = 9;
+    for (int iface = 0; iface != mapper->nface; iface++)
+    {
+        P3TriangleHomology_t homology = {
+            { PxV_P3V, { NULL, NULL, NULL }},
+            { PxV_P2V, { NULL, NULL, NULL }}
+        };
+        int* tri = mesh->indices + iface * 3;
+        const float *texconf = conf->textureCoords + iface * 6;
+        homology.src.vert[0] = &mesh->vertices[P3VSIZE * tri[0]];
+        homology.src.vert[1] = &mesh->vertices[P3VSIZE * tri[1]];
+        homology.src.vert[2] = &mesh->vertices[P3VSIZE * tri[2]];
+        const float realtexturecoord[P2VSIZE * 3] = {
+            texturesize[0] * texconf[0], texturesize[1] * texconf[1], 1.0f,
+            texturesize[0] * texconf[2], texturesize[1] * texconf[3], 1.0f,
+            texturesize[0] * texconf[4], texturesize[1] * texconf[5], 1.0f
+        };
+        homology.dst.vert[0] = realtexturecoord;
+        homology.dst.vert[1] = homology.dst.vert[0] + P2VSIZE;
+        homology.dst.vert[2] = homology.dst.vert[1] + P2VSIZE;
+        P3TriangleHomology_homographymatrix(&homology, mapper->h + hsize * iface);
+    }
+}
+
+int MeshTextureMapper_new(
+    pMeshTextureMapper_t mapper, 
+    pcMesh_t mesh, 
+    pcMeshTextureMapperConf_t conf, 
+    pcTextureInterpolator_t texsrc
+) {
+    int err = EXIT_SUCCESS;
+    do {
+        if (mapper->h)
+        {
+            MeshTextureMapper_delete(mapper);
+        }
+        if (((float*)NULL) == (mapper->h = (float*)calloc(conf->nface * 3 * 3, sizeof(float))))
+        {
+            err = ENOMEM;
+            break;
+        }
+        mapper->nface = conf->nface;
+        mapper->texsrc = texsrc;
+        const float texturesize[] = { (float)texsrc->texture->size[0], (float)texsrc->texture->size[1] };
+        MeshTextureMapper_init(mapper, conf, mesh, texturesize);
+    } while (0);
+    return err;
+}
+
+void MeshTextureMapper_delete(pMeshTextureMapper_t mapper)
+{
+    if (mapper && mapper->h)
+    {
+        free(mapper->h);
+        mapper->h = (float*)NULL;
+        mapper->nface = 0;
+        mapper->texsrc = (pcTextureInterpolator_t)NULL;
+    }
+}
+
+int MeshTextureMapper_get(pcMeshTextureMapper_t mapper, pcMeshCrossInfo_t crossinfo, float* value)
+{
+    const float* h = &mapper->h[9 * crossinfo->itri]; // homography matrix to convert mesh vertex 3D coord to real texture coord
+    float vtexcoord[3];
+    P2MP2V_mult(h, crossinfo->intersection, vtexcoord);
+    vtexcoord[0] /= vtexcoord[2];
+    vtexcoord[1] /= vtexcoord[2];
+    vtexcoord[2] = 1.0f;
+    return TextureInterpolator_get(mapper->texsrc, vtexcoord, value);
 }

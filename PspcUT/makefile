@@ -9,9 +9,11 @@ RELEASE_TARGET_DIR = ../release
 RELEASE_TARGET = $(RELEASE_TARGET_DIR)/PspcUT.exe
 RELEASE_OBJECT_DIR = $(RELEASE_TARGET_DIR)/o
 DEBUG_OBJECTS = $(DEBUG_OBJECT_DIR)/PvectorUT.o $(DEBUG_OBJECT_DIR)/PmatrixUT.o $(DEBUG_OBJECT_DIR)/PspcUT.o \
-	$(DEBUG_OBJECT_DIR)/solveUT.o $(DEBUG_OBJECT_DIR)/PcameraUT.o $(DEBUG_OBJECT_DIR)/homographyUT.o
-RELEASE_OBJECTS = $(RELEASE_OBJECT_DIR)/Pvector.o $(RELEASE_OBJECT_DIR)/Pmatrix.o$ (RELEASE_OBJECT_DIR)/PspcUT.o \
-	 (RELEASE_OBJECT_DIR)/solveUT.o (RELEASE_OBJECT_DIR)/PcameraUT.o (RELEASE_OBJECT_DIR)/homographyUT.o
+	$(DEBUG_OBJECT_DIR)/solveUT.o $(DEBUG_OBJECT_DIR)/PcameraUT.o $(DEBUG_OBJECT_DIR)/homographyUT.o \
+	$(DEBUG_OBJECT_DIR)/Pcamera0UT.o
+RELEASE_OBJECTS = $(RELEASE_OBJECT_DIR)/Pvector.o $(RELEASE_OBJECT_DIR)/Pmatrix.o$ $(RELEASE_OBJECT_DIR)/PspcUT.o \
+	$(RELEASE_OBJECT_DIR)/solveUT.o $(RELEASE_OBJECT_DIR)/PcameraUT.o $(RELEASE_OBJECT_DIR)/homographyUT.o \
+	$(RELEASE_OBJECT_DIR)/Pcamera0UT.o
 
 .PHONY	:	debug
 debug	:	$(DEBUG_TARGET)
@@ -39,6 +41,14 @@ $(DEBUG_OBJECT_DIR)/PcameraUT.o	:	PcameraUT.c
 	$(CC) $(DEBUG_CC_FLAGS) -o $@ $<
 
 $(DEBUG_OBJECT_DIR)/homographyUT.o	:	homographyUT.c
+	mkdir -p $(DEBUG_OBJECT_DIR)
+	$(CC) $(DEBUG_CC_FLAGS) -o $@ $<
+
+$(DEBUG_OBJECT_DIR)/Pcamera2UT.o	:	Pcamera2UT.c
+	mkdir -p $(DEBUG_OBJECT_DIR)
+	$(CC) $(DEBUG_CC_FLAGS) -o $@ $<
+
+$(DEBUG_OBJECT_DIR)/Pcamera0UT.o	:	Pcamera0UT.c
 	mkdir -p $(DEBUG_OBJECT_DIR)
 	$(CC) $(DEBUG_CC_FLAGS) -o $@ $<
 

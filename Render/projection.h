@@ -2,7 +2,7 @@
 #define PROJECTION_H_
 #include "Render/texture.h"
 #include "Render/mesh.h"
-#include "Pspc/Pcamera.h"
+#include "Pspc/Pcamera2.h"
 #include "Pspc/Pmatrix.h"
 #ifdef __cplusplus
 extern "C" {
@@ -10,8 +10,8 @@ extern "C" {
 typedef struct {
     pcMesh_t geometryModel;
     pcImageC_t texture;
-    P3MCameraPosition_t cameraPosition;
-    pcP2GridHomology_t gridHomology;
+    pcMeshTextureMapperConf_t texConf;
+    pcCamera2_t camera;
 } Scene_t, *pScene_t;
 typedef const Scene_t *pcScene_t;
 

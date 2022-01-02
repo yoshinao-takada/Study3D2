@@ -30,6 +30,16 @@ const float* P3M_mult(const float* matA, const float* matB, float* mwork);
 const float* P3MP3V_mult(const float* matA, const float* vecB, float* vwork);
 
 /**
+ * @brief multiply a matrix and a column vector
+ * 
+ * @param matA [in] 3x4 matrix
+ * @param vecB [in] 4x1 column vector
+ * @param vwork [in] 3x1 column vector work area
+ * @return const float* 3x1 column vector of product of matA and vecB
+ */
+const float* P23MP3V_mult(const float* matA, const float* vecB, float* vwork);
+
+/**
  * @brief Create a transport matrix from fromP3 to toP3
  * 
  * @param fromP3 [in] start point of transport in homogeneous coordinate
@@ -126,6 +136,15 @@ typedef const P3MCameraPosition_t *pcP3MCameraPosition_t;
  * @return const float* 4x4 homogeneous matrix
  */
 const float* P3M_tocameracoord(pcP3MCameraPosition_t cameraposition, float* mwork);
+
+/**
+ * @brief Calculate a transformation matrix for a camera to its scene
+ * 
+ * @param cameraposition [in] destination and final attitude
+ * @param mwork [in] work area of 4x4 matrix is converted to const float* to return
+ * @return const float* 4x4 homogeneous matrix
+ */
+const float* P3M_cameratransform(pcP3MCameraPosition_t cameraposition, float* mwork);
 
 /**
  * @brief invert matA which is a projection matrix in P2 space; i.e. 3x3 matrix

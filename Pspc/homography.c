@@ -4,6 +4,56 @@
 #include "NLSL/NLSLmatrix.h"
 #include <math.h>
 
+#pragma region SHOW_TRIANGLE_and_its_impl
+typedef void (*SHOW_TRIANGLE)(pcP3Triangle_t triangle, FILE* pf);
+
+void ShowTri_P3V(pcP3Triangle_t triangle, FILE* pf)
+{
+    fprintf(pf, "Type = PxV_P3V\n");
+    for (int i = 0; i < 3; i++)
+    {
+        fprintf(pf, "vert[%d] = { %f, %f, %f, %f }\n", i,
+            triangle->vert[i][0], triangle->vert[i][1], triangle->vert[i][2], triangle->vert[i][3]);
+    }
+}
+
+void ShowTri_R3V(pcP3Triangle_t triangle, FILE* pf)
+{
+    fprintf(pf, "Type = PxV_R3V\n");
+    for (int i = 0; i < 3; i++)
+    {
+        fprintf(pf, "vert[%d] = { %f, %f, %f }\n", i, triangle->vert[i][0], triangle->vert[i][1], triangle->vert[i][2]);
+    }
+}
+
+void ShowTri_P2V(pcP3Triangle_t triangle, FILE* pf)
+{
+    fprintf(pf, "Type = PxV_P2V\n");
+    for (int i = 0; i < 3; i++)
+    {
+        fprintf(pf, "vert[%d] = { %f, %f, %f }\n", i, triangle->vert[i][0], triangle->vert[i][1], triangle->vert[i][2]);
+    }
+}
+
+void ShowTri_R2V(pcP3Triangle_t triangle, FILE* pf)
+{
+    fprintf(pf, "Type = PxV_R2V\n");
+    for (int i = 0; i < 3; i++)
+    {
+        fprintf(pf, "vert[%d] = { %f, %f }\n", i, triangle->vert[i][0], triangle->vert[i][1]);
+    }
+}
+
+#pragma endregion SHOW_TRIANGLE_and_its_impl
+void P3TriangleHomology_show(pcP3TriangleHomology_t homology, FILE* out)
+{
+    static const SHOW_TRIANGLE funcs[] = { ShowTri_P3V, ShowTri_R3V, ShowTri_P2V, ShowTri_R2V };
+    fprintf(out, "src: ");
+    funcs[homology->src.type](&homology->src, out);
+    fprintf(out, "dst: ");
+    funcs[homology->dst.type](&homology->dst, out);
+}
+
 static const float* P3V_AnotherPoint(const float* const *vert, float* work)
 {
     float vwork[P3VSIZE];
@@ -37,6 +87,7 @@ static const float* R2V_AnotherPoint(const float* const *vert, float* work)
     vwork[1] = vert[1][1] + vert[2][1];
     work[0] = vwork[0] - vert[0][0];
     work[1] = vwork[1] - vert[0][1];
+    work[2] = 1.0f;
     return work;
 }
 

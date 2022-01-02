@@ -154,7 +154,7 @@ int TextureInterpolator_init(pTextureInterpolator_t interpolator, pcImageC_t tex
         interpolator->size[1] = texture->size[1] - 1;
         size_t cellCount = interpolator->size[0] * interpolator->size[1];
         size_t floatCount = cellCount * 4;
-        interpolator->table = (float*)malloc(floatCount*sizeof(float));
+        interpolator->table = (float*)calloc(floatCount, sizeof(float));
         if (NULL == interpolator->table)
         {
             err = ENOMEM;
@@ -166,9 +166,9 @@ int TextureInterpolator_init(pTextureInterpolator_t interpolator, pcImageC_t tex
         int tableSize[] = { interpolator->size[0], interpolator->size[1] };
         int tableStride = 4 * tableSize[0];
         int srcStride = texture->size[0];
-        for (int row = 0; row != texture->size[1]; row++)
+        for (int row = 0; row != interpolator->size[1]; row++)
         {
-            for (int column = 0; column != texture->size[0]; column++)
+            for (int column = 0; column != interpolator->size[0]; column++)
             {
                 float* a = tablePtr + column * 4;
                 const float* f = srcPtr + column;

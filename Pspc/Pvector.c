@@ -151,6 +151,6 @@ const float* P3Vtriangle_line_intersection
     const float* vx12 = P3V_cross(v1, v2, Vwork + 4 * P3VSIZE);
     const float* vx20 = P3V_cross(v2, v0, Vwork + 5 * P3VSIZE);
     int sameDirection =
-        (P3V_dot(vx01, vx12) > 0.0f) && (P3V_dot(vx12, vx20) > 0.0f) &&  (P3V_dot(vx20, vx01) > 0.0f);
+        (P3V_dot(vx01, vx12) >= 0.0f) && (P3V_dot(vx12, vx20) >= 0.0f) &&  (P3V_dot(vx20, vx01) >= 0.0f);
     return sameDirection ? intersection : NULL;
 }

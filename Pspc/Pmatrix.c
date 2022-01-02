@@ -63,6 +63,21 @@ const float* P3MP3V_mult(const float* matA, const float* vecB, float* vwork)
     return vwork;
 }
 
+const float* P23MP3V_mult(const float* matA, const float* vecB, float* vwork)
+{
+    const float* matArow = matA;
+    for (int row = 0; row < P2Mrows; row++)
+    {
+        vwork[row] = 0.0f;
+        for (int column = 0; column < P3Mcolumns; column++)
+        {
+            vwork[row] += matArow[column] * vecB[column];
+        }
+        matArow += P3Mcolumns;
+    }
+    return vwork;
+}
+
 const float* P3M_transport(const float* fromP3, const float* toP3, float* mwork)
 {
     NLSL_FILLFLOATS(mwork, 0.0f, P3Msize); // fill mwork with 0s
@@ -170,10 +185,18 @@ const float* P3M_rotateaboutaxis(float angle, const float* p0, const float* dir,
 
 const float* P3M_tocameracoord(pcP3MCameraPosition_t cameraposition, float* mwork)
 {
+    float pmat[P3MSIZE];
+    const float* result = P3M_inv(P3M_cameratransform(cameraposition, pmat), mwork);
+    return result;
+}
+
+const float* P3M_cameratransform(pcP3MCameraPosition_t cameraposition, float* mwork)
+{
     const float* result = NULL;
-    const int Nmat = 5;
+    const int Nmat = 4;
     const int Nvec = 1;
     float* pmat = (float*)calloc(Nmat * P3Msize + Nvec * P3Mrows, sizeof(float)); // 5 matrices and 2 vectors
+    if (!pmat) return pmat;
     float* pvec = pmat + Nmat * P3Msize;
 
     // align matrix from negative Z axis to look-at direction vector  as m0
@@ -186,14 +209,11 @@ const float* P3M_tocameracoord(pcP3MCameraPosition_t cameraposition, float* mwor
     // move camera origin to look-from position as m2
     const float* m2 = P3M_transport(OriginP3, cameraposition->position, pmat + 2 * P3Msize);
 
-    // calc inv(m2 * m1 * m0)
-    const float* mCameraMove = P3M_mult(m2, P3M_mult(m1, m0, pmat + 3 * P3Msize), pmat + 4 * P3Msize);
-    result = P3M_inv(mCameraMove, mwork);
-
+    // calc m2 * m1 * m0
+    const float* mCameraMove = P3M_mult(m2, P3M_mult(m1, m0, pmat + 3 * P3Msize), mwork);
     free(pmat);
-    return result;
+    return mCameraMove;
 }
-
 #pragma region viewport_matrix
 const float* P2M_inv(const float* matA, float* mwork)
 {

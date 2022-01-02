@@ -19,11 +19,13 @@ extern "C" {
 #define LOGERRORBREAK(_out_, _place_, _line_, ...) if (_out_) { \
     fprintf(_out_, __VA_ARGS__); fprintf(_out_, " @ %s, %d\n", _place_, _line_); break; }
 
+#define TESTSIGNF(var) (((var) > 0.0f) ? (1.0f) : (-1.0f))
+
 #define TESTEQUALF0(var0, var1, tol) ( \
     (fabsf((var0) - (var1)) / fabsf((var0) + (var1))) < tol)
 
 #define TESTEQUALF(var0, var1, tol) ( \
-    (fabsf(var0 + var1) < tol) ? TESTEQUALF0(var0 + tol, var1 + tol, tol) : TESTEQUALF0(var0, var1, tol))
+    (fabsf(var0 + var1) < (tol)) ? TESTEQUALF0(var0 + TESTSIGNF(var0 + var1) * tol, var1 + TESTSIGNF(var0 + var1) * tol, tol) : TESTEQUALF0(var0, var1, tol))
 
 #define TESTEQUALP3V(v0, v1, tol) ( \
     TESTEQUALF((v0)[0]/(v0)[3], (v1)[0]/(v1)[3], tol) && TESTEQUALF((v0)[1]/(v0)[3], (v1)[1]/(v1)[3], tol) && \

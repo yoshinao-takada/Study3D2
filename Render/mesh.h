@@ -3,7 +3,10 @@
 #include "ZnccC/ImageC.h"
 #include "Render/texture.h"
 #ifdef __cplusplus
+#include <cstdio>
 extern "C" {
+#else
+#include <stdio.h>
 #endif
 /**
  * @brief mesh defines data structures and APIs to describe 3-D object consisting of triangle surfaces.
@@ -18,6 +21,7 @@ typedef struct {
     int32_t* indices; // triangle indices aggregated int[3] x ntri arrays
 } Mesh_t, *pMesh_t;
 typedef const Mesh_t *pcMesh_t;
+#define NULLMESH    { 0, 0, (float*)NULL, (int32_t*)NULL }
 
 /**
  * @brief create a new mesh object
@@ -36,36 +40,6 @@ int Mesh_new(pMesh_t mesh, int nvert, int ntri);
  */
 void Mesh_delete(pMesh_t mesh);
 
-typedef struct {
-    pcImageC_t textureSource;
-    float* normalizedTextureCoords; // (0, 0) - (1, 1) => (0, 0) - (width, source) normalized coords
-    float* hmat; // homography matrices mapping mesh triangle emements to triangles on real texture coordinates
-} TextureMapper_t, *pTextureMapper_t;
-typedef const TextureMapper_t *pcTextureMapper_t;
-
-/**
- * @brief Update conversion matrices
- * 
- * @param mesh 
- */
-void Mesh_calc_mP2VertToTexture(pMesh_t mesh);
-
-/**
- * @brief get a number of float variables; i.e. sum of vertices and texcoords float variables
- * 
- * @param mesh [in]
- * @return int number of float variables
- */
-int Mesh_nfloats(pcMesh_t mesh);
-
-/**
- * @brief get a number of int variables; i.e. sum of indices int variables
- * 
- * @param mesh [in]
- * @return int number of int variables
- */
-int Mesh_nints(pcMesh_t mesh);
-
 /**
  * @brief transform a mesh
  * 
@@ -77,7 +51,7 @@ void Mesh_transform(pcMesh_t src, pMesh_t dst, const float* mat);
 
 typedef struct {
     float intersection[4]; // homogeneous coordinate of intersection
-    const int* indices; // indices of triangle vertices
+    int itri; // indices of triangle vertices
     pcMesh_t mesh;
 } MeshCrossInfo_t, *pMeshCrossInfo_t;
 typedef const MeshCrossInfo_t *pcMeshCrossInfo_t;
@@ -94,16 +68,75 @@ typedef const MeshCrossInfo_t *pcMeshCrossInfo_t;
 int Mesh_cross(pcMesh_t mesh, const float* p0, const float* dir, pMeshCrossInfo_t crossInfo);
 
 /**
- * @brief get a texture value at the cross point
+ * @brief format and print into a file stream.
  * 
- * @param mesh [in]
- * @param crossInfo [in]
- * @param texture [in]
- * @param value [out]
- * @return int EXIT_SUCCESS or errno compatible error code
+ * @param out [in] output file stream
+ * @param crossInfo [in] data to show
  */
-int Mesh_texture(pcMesh_t mesh, pcMeshCrossInfo_t crossInfo, pcTextureInterpolator_t texture, float* value);
+void MeshCrossInfo_show(FILE* out, pcMeshCrossInfo_t crossInfo);
 
+typedef struct {
+    int nface; // triangle face count
+    float* textureCoords; // each face has (3 * R2VSIZE) elements, totally nface * (3 * R2VSIZE) elements
+} MeshTextureMapperConf_t, *pMeshTextureMapperConf_t;
+typedef const MeshTextureMapperConf_t *pcMeshTextureMapperConf_t;
+
+#define NULL_MESHTEXTUREMAPPERCONF    { 0, (float*)NULL }
+
+typedef struct {
+    int nface; // triangle face count
+    pcTextureInterpolator_t texsrc;
+    float* h; // array of homography matrices (nface * 3 * 3 elements)
+} MeshTextureMapper_t, *pMeshTextureMapper_t;
+typedef const MeshTextureMapper_t *pcMeshTextureMapper_t;
+#define NULL_MESHTEXTUREMAPPER    { 0, (pcTextureInterpolator_t)NULL, (float*)NULL }
+
+/**
+ * @brief allocate a memory block to an object
+ * 
+ * @param conf [in,out] object to initialize
+ * @param mesh [in] target mesh to apply a texture
+ * @return int 
+ */
+int MeshTextureMapperConf_new(pMeshTextureMapperConf_t conf, pcMesh_t mesh);
+
+/**
+ * @brief free a memory block in an existing object
+ * 
+ * @param conf 
+ */
+void MeshTextureMapperConf_delete(pMeshTextureMapperConf_t conf);
+
+/**
+ * @brief allocate a memory block to an object and initialize the internal tables.
+ * 
+ * @param mapper [in,out] an object to initialize
+ * @param mesh [in]
+ * @param conf [in]
+ * @param texsrc [in]
+ * @return int 
+ */
+int MeshTextureMapper_new(
+    pMeshTextureMapper_t mapper, 
+    pcMesh_t mesh, 
+    pcMeshTextureMapperConf_t conf, 
+    pcTextureInterpolator_t texsrc);
+
+/**
+ * @brief free a memory block in an existing object
+ * 
+ * @param mapper 
+ */
+void MeshTextureMapper_delete(pMeshTextureMapper_t mapper);
+
+/**
+ * @brief get a texture color value at a point specified by crossinfo.
+ * 
+ * @param mapper [in] whole texture info
+ * @param crossinfo [in] coordinate info on selected mesh vertices
+ * @return int 
+ */
+int MeshTextureMapper_get(pcMeshTextureMapper_t mapper, pcMeshCrossInfo_t crossinfo, float* value);
 #ifdef __cplusplus
 }
 #endif
