@@ -190,6 +190,11 @@ int TextureInterpolator_get(pcTextureInterpolator_t interpolator, const float* x
     do {
         int ix = (int)floorf(xy[0]);
         int iy = (int)floorf(xy[1]);
+        if ((ix >= interpolator->size[0]) || (iy >= interpolator->size[1]) || (ix < 0) || (iy < 0))
+        {
+            err = ERANGE;
+            break;
+        }
         float fracx = xy[0] - (float)ix;
         float fracy = xy[1] - (float)iy;
         const float* a = interpolator->table + 4 * (ix + iy * interpolator->size[0]);

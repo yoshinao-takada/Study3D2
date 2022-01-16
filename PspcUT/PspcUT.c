@@ -5,6 +5,7 @@ int solveUT();
 int PcameraUT();
 int homographyUT();
 int Pcamera0UT();
+int gnsolverUT();
 
 int main()
 {
@@ -32,7 +33,11 @@ int main()
         }
         if (EXIT_SUCCESS != (err =Pcamera0UT()))
         {
-            LOGERRORBREAK(stderr, __FILE__, __LINE__, "Pcamera2UT() = %d\n", err);
+            LOGERRORBREAK(stderr, __FILE__, __LINE__, "Pcamera0UT() = %d\n", err);
+        }
+        if (EXIT_SUCCESS != (err =gnsolverUT()))
+        {
+            LOGERRORBREAK(stderr, __FILE__, __LINE__, "gnsolverUT() = %d\n", err);
         }
     } while (0);
     return err;

@@ -22,6 +22,8 @@
         "pcamera2.h": "c",
         "stdlib.h": "c",
         "pcamera.h": "c",
-        "pcamera0.h": "c"
+        "pcamera0.h": "c",
+        "nlslgnsolver.h": "c",
+        "gnhomography.h": "c"
     }
 }

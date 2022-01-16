@@ -10,14 +10,13 @@ int FastHistogram_New(pFastHistogram_t hist, float range0, float range1, int sub
     hist->range[1] = range1;
     hist->counterCount = subrangeCount + 2;
     hist->counterCountM1 = hist->counterCount - 1;
-    hist->counters = (int*)malloc(hist->counterCount);
+    hist->counters = (int*)calloc(hist->counterCount, sizeof(int));
     hist->scaling = subrangeCount / (range1 - range0);
     if (hist->counters == NULL)
     {
         FastHistogram_Delete(hist);
         return ENOMEM;
     }
-    memset(hist->counters, 0, hist->counterCount * sizeof(*hist->counters));
     float subrangeWidth = FastHistogram_SubrangeWidth(hist);
     hist->range[0] -= subrangeWidth;
     hist->range[1] -= subrangeWidth;

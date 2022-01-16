@@ -43,6 +43,15 @@ void P3TriangleHomology_show(pcP3TriangleHomology_t homology, FILE* out);
 const float* P3TriangleHomology_homographymatrix(pcP3TriangleHomology_t homology, float* work);
 
 /**
+ * @brief using Gauss-Newton method, calculate a homography matrix based on a homology of two triangles
+ * 
+ * @param homology 
+ * @param work 
+ * @return const float* 
+ */
+const float* P3TriangleHomology_homographymatrix2(pcP3TriangleHomology_t homology, float* work);
+
+/**
  * @brief calculate the 4th corner of a parallelogram opposing to triangle->vert[0]
  * 
  * @param triangle [in]

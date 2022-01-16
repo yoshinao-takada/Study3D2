@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <memory.h>
 #include "NLSL/NLSLutils.h"
+#include "NLSL/NLSLmatrix.h"
 
 int Mesh_new(pMesh_t mesh, int nvert, int ntri)
 {
@@ -147,7 +148,7 @@ static void MeshTextureMapper_init(pMeshTextureMapper_t mapper, pcMeshTextureMap
         homology.dst.vert[0] = realtexturecoord;
         homology.dst.vert[1] = homology.dst.vert[0] + P2VSIZE;
         homology.dst.vert[2] = homology.dst.vert[1] + P2VSIZE;
-        P3TriangleHomology_homographymatrix(&homology, mapper->h + hsize * iface);
+        P3TriangleHomology_homographymatrix2(&homology, mapper->h + hsize * iface);
     }
 }
 

@@ -1,8 +1,13 @@
 #include "Pspc/homography.h"
+#include "Pspc/gnhomography.h"
 #include "Pspc/Pmatrix.h"
 #include "Pspc/Pvector.h"
 #include "NLSL/NLSLmatrix.h"
+#include "NLSL/NLSLgnsolver.h"
+#include <stdlib.h>
 #include <math.h>
+#include <memory.h>
+#include <assert.h>
 
 #pragma region SHOW_TRIANGLE_and_its_impl
 typedef void (*SHOW_TRIANGLE)(pcP3Triangle_t triangle, FILE* pf);
@@ -178,4 +183,70 @@ const float* P3TriangleHomology_homographymatrix(pcP3TriangleHomology_t homology
     NLSLmatrix_mult(&minv, &v, &h);
     work[8] = 1.0f;
     return work;
+}
+
+const float* P3TriangleHomology_homographymatrix2(pcP3TriangleHomology_t homology, float* work)
+{
+    float pk[R2VSIZE * 3], pj[R3VSIZE * 3];
+    if (homology->dst.type == PxV_R2V)
+    {
+        pk[0] = homology->dst.vert[0][0];
+        pk[1] = homology->dst.vert[0][1];
+        pk[2] = homology->dst.vert[1][0];
+        pk[3] = homology->dst.vert[1][1];
+        pk[4] = homology->dst.vert[2][0];
+        pk[5] = homology->dst.vert[2][1];
+    }
+    else if (homology->dst.type == PxV_P2V)
+    {
+        pk[0] = homology->dst.vert[0][0] / homology->dst.vert[0][2];
+        pk[1] = homology->dst.vert[0][1] / homology->dst.vert[0][2];
+        pk[2] = homology->dst.vert[1][0] / homology->dst.vert[1][2];
+        pk[3] = homology->dst.vert[1][1] / homology->dst.vert[1][2];
+        pk[4] = homology->dst.vert[2][0] / homology->dst.vert[2][2];
+        pk[5] = homology->dst.vert[2][1] / homology->dst.vert[2][2];
+    }
+    else
+    {
+        assert(0);
+    }
+
+    if (homology->src.type == PxV_R2V)
+    {
+        pj[0] = homology->src.vert[0][0];
+        pj[1] = homology->src.vert[0][1];
+        pj[2] = 0.0f;
+        pj[3] = homology->src.vert[1][0];
+        pj[4] = homology->src.vert[1][1];
+        pj[5] = 0.0f;
+        pj[6] = homology->src.vert[2][0];
+        pj[7] = homology->src.vert[2][1];
+        pj[8] = 0.0f;
+    }
+    else if (homology->src.type == PxV_P2V)
+    {
+        pj[0] = homology->src.vert[0][0] / homology->src.vert[0][2];
+        pj[1] = homology->src.vert[0][1] / homology->src.vert[0][2];
+        pj[2] = 0.0f;
+        pj[3] = homology->src.vert[1][0] / homology->src.vert[1][2];
+        pj[4] = homology->src.vert[1][1] / homology->src.vert[1][2];;
+        pj[5] = 0.0f;
+        pj[6] = homology->src.vert[2][0] / homology->src.vert[2][2];
+        pj[7] = homology->src.vert[2][1] / homology->src.vert[2][2];
+        pj[8] = 0.0f;
+    }
+    else if ((homology->src.type == PxV_R3V) || (homology->src.type == PxV_P3V))
+    {
+        pj[0] = homology->src.vert[0][0];
+        pj[1] = homology->src.vert[0][1];
+        pj[2] = homology->src.vert[0][2];
+        pj[3] = homology->src.vert[1][0];
+        pj[4] = homology->src.vert[1][1];
+        pj[5] = homology->src.vert[1][2];
+        pj[6] = homology->src.vert[2][0];
+        pj[7] = homology->src.vert[2][1];
+        pj[8] = homology->src.vert[2][2];
+    }
+    
+    return gnhomography(pk, pj, work);
 }

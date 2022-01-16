@@ -9,9 +9,9 @@ RELEASE_TARGET_DIR = ../release
 RELEASE_TARGET = $(RELEASE_TARGET_DIR)/libPspc.a
 RELEASE_OBJECT_DIR = $(RELEASE_TARGET_DIR)/o
 DEBUG_OBJECTS = $(DEBUG_OBJECT_DIR)/Pvector.o $(DEBUG_OBJECT_DIR)/Pmatrix.o $(DEBUG_OBJECT_DIR)/Pcamera.o \
-	$(DEBUG_OBJECT_DIR)/homography.o $(DEBUG_OBJECT_DIR)/Pcamera0.o
+	$(DEBUG_OBJECT_DIR)/homography.o $(DEBUG_OBJECT_DIR)/Pcamera0.o $(DEBUG_OBJECT_DIR)/gnhomography.o
 RELEASE_OBJECTS = $(RELEASE_OBJECT_DIR)/Pvector.o $(RELEASE_OBJECT_DIR)/Pmatrix.o $(RELEASE_OBJECT_DIR)/Pcamera.o \
-	$(RELEASE_OBJECT_DIR)/homography.o $(RELEASE_OBJECT_DIR)/Pcamera0.o
+	$(RELEASE_OBJECT_DIR)/homography.o $(RELEASE_OBJECT_DIR)/Pcamera0.o $(RELEASE_OBJECT_DIR)/gnhomography.o
 
 .PHONY	:	debug
 debug	:	$(DEBUG_TARGET)
@@ -37,6 +37,10 @@ $(DEBUG_OBJECT_DIR)/homography.o	:	homography.c homography.h
 	$(CC) $(DEBUG_CC_FLAGS) -o $@ $<
 
 $(DEBUG_OBJECT_DIR)/Pcamera0.o	:	Pcamera0.c Pcamera0.h
+	mkdir -p $(DEBUG_OBJECT_DIR)
+	$(CC) $(DEBUG_CC_FLAGS) -o $@ $<
+
+$(DEBUG_OBJECT_DIR)/gnhomography.o	:	gnhomography.c gnhomography.h
 	mkdir -p $(DEBUG_OBJECT_DIR)
 	$(CC) $(DEBUG_CC_FLAGS) -o $@ $<
 
