@@ -6,6 +6,7 @@
 #include "NLSL/NLSLutils.h"
 #include <memory.h>
 #include <math.h>
+#include <sys/param.h>
 
 #pragma region define_mesh
 // 6 -- 7 -- 8
@@ -180,10 +181,10 @@ static void Cleanup()
     ImageC_Delete(&RenderTarget);
 }
 
-static const Camera35mmConf_t CameraParams = { { 640, 480 }, 22.0e-3f };
+static const Camera35mmConf_t CameraParams = { { 1024, 768 }, 22.0e-3f };
 
 static const P3MCameraPosition_t CameraPosition = {
-    0.0f, { 3.0f, 3.0f, 3.0f, 1.0f }, { 0.0f, 0.0f, 0.5f, 1.0f }
+    0.0f, { 2.0f, 2.0f, 2.0f, 1.0f }, { 0.0f, 0.0f, 0.5f, 1.0f }
 };
 
 static const Scene2_t scene = { 4, objects, &CameraParams, &CameraPosition };
@@ -232,6 +233,13 @@ void CleanTextureMappers(int count, pMeshTextureMapper_t textureMappers)
     free(textureMappers);
 }
 
+static uint8_t ConvPixel(float pixelValue)
+{
+    int32_t i32Value = (int32_t)(pixelValue * 256.0f);
+    uint8_t u8Value = (uint8_t)MAX(0, MIN(255, i32Value));
+    return u8Value;
+}
+
 int projection2UT()
 {
     int err = EXIT_SUCCESS;
@@ -247,6 +255,7 @@ int projection2UT()
             LOGERRORBREAK(stderr, __FUNCTION__, __LINE__, "err = %d", err);
         }
         ImageLog_ShowImageRange(&RenderTarget, 0.0f, 1.0f);
+        ImageLog_SaveImageC("../Work/", "image.jpg", &RenderTarget, ConvPixel);
     } while (0);
     LOGERROR(stderr, __FUNCTION__, __LINE__, "err = %d", err);
     CleanMeshes(scene.objCount, meshes);

@@ -30,7 +30,7 @@ static char* MakePath(const char* dir, const char* filename)
     const char* dirsep = ('/' == dir[strlen(dir) - 1]) ? "" : "/";
     strcpy(pathBuffer, dir);
     struct stat s;
-    if (!stat(pathBuffer, &s))
+    if (-1 == stat(pathBuffer, &s))
     {
         if (mkdir(pathBuffer, 0777))
         {
@@ -69,7 +69,7 @@ int ImageLog_SaveImageC(const char* dir, const char* filename, pcImageC_t image,
             break;
         }
         cv::Mat1b cvimage(image->size[1], image->size[0]);
-        cvimage.forEach(JustCopy(image, FuncF2U8));
+        cvimage.forEach(JustCopy(image, pixconv));
         cv::imwrite(pathBuffer, cvimage);
     } while (0);
     if (pathBuffer) free(pathBuffer);
