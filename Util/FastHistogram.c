@@ -44,7 +44,7 @@ void FastHistogram_Classify(pFastHistogram_t hist, float toClassify)
 float FastHistogram_SubrangeCenter(pcFastHistogram_t hist, int index)
 {
     float deltaRange = FastHistogram_SubrangeWidth(hist);
-    return hist->range[0] + deltaRange * ((float)index + 1.5f);
+    return hist->range[0] + deltaRange * ((float)index + 0.5f);
 }
 
 float FastHistogram_SubrangeWidth(pcFastHistogram_t hist)

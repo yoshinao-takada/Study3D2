@@ -45,7 +45,7 @@ void PixelMap_fill(pImageC_t pixels, pcPixelOperation_t op);
 typedef enum {
     StdTex0, // square mosaic + corner position marks (100 x 16) x (100 x 16) size
             // bright level 200, dark level 50, grayscale
-    StdTex1 // not defined
+    StdTex1, // solid and blured blobs
 } StdTex_t;
 /**
  * @brief fill standard texture pattern
@@ -89,6 +89,16 @@ int TextureInterpolator_get(pcTextureInterpolator_t interpolator, const float* x
  * @param interpolator 
  */
 void TextureInterpolator_delete(pTextureInterpolator_t interpolator);
+
+/**
+ * @brief create a texture of solid color background and random blured blobs
+ * 
+ * @param tex [out] texture
+ * @param texConf [in] configuration
+ * @return int of unix errno compatible code
+ */
+int PixelMap_SolidAndBlobs(pImageC_t tex, StdTex_t texConf);
+
 #ifdef __cplusplus
 }
 #endif

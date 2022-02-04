@@ -12,14 +12,15 @@ RELEASE_TARGET_DIR = ../release
 RELEASE_TARGET = $(RELEASE_TARGET_DIR)/RenderUT.exe
 RELEASE_OBJECT_DIR = $(RELEASE_TARGET_DIR)/o
 DEBUG_OBJECTS = $(DEBUG_OBJECT_DIR)/RenderUT.o $(DEBUG_OBJECT_DIR)/meshUT.o $(DEBUG_OBJECT_DIR)/textureUT.o \
-	$(DEBUG_OBJECT_DIR)/projectionUT.o
+	$(DEBUG_OBJECT_DIR)/projectionUT.o $(DEBUG_OBJECT_DIR)/projection2UT.o
 RELEASE_OBJECTS = $(RELEASE_OBJECT_DIR)/RenderUT.o $(RELEASE_OBJECT_DIR)/meshUT.o $(RELEASE_OBJECT_DIR)/textureUT.o \
-	$(RELEASE_OBJECT_DIR)/projectionUT.o
+	$(RELEASE_OBJECT_DIR)/projectionUT.o $(RELEASE_OBJECT_DIR)/projection2UT.o
 
 .PHONY	:	debug
 debug	:	$(DEBUG_TARGET)
 
 $(DEBUG_TARGET)	:	$(DEBUG_OBJECTS)
+	mkdir -p ../Work
 	$(CC) -o $@ $^ $(DEBUG_LIBS)
 
 $(DEBUG_OBJECT_DIR)/RenderUT.o	:	RenderUT.c
@@ -35,6 +36,10 @@ $(DEBUG_OBJECT_DIR)/textureUT.o	:	textureUT.c
 	$(CC) $(DEBUG_CC_FLAGS) -o $@ $<
 
 $(DEBUG_OBJECT_DIR)/projectionUT.o	:	projectionUT.c
+	mkdir -p $(DEBUG_OBJECT_DIR)
+	$(CC) $(DEBUG_CC_FLAGS) -o $@ $<
+
+$(DEBUG_OBJECT_DIR)/projection2UT.o	:	projection2UT.c
 	mkdir -p $(DEBUG_OBJECT_DIR)
 	$(CC) $(DEBUG_CC_FLAGS) -o $@ $<
 

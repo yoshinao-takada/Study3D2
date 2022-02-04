@@ -1,9 +1,12 @@
 #include "Render/texture.h"
 #include "Render/StdTexDefs.h"
 #include "NLSL/NLSLutils.h"
+#include "ZnccC/SumKernelC.h"
+#include "Util/imagelogC.h"
 #include <stdio.h>
 #include <errno.h>
 #include <math.h>
+#include <memory.h>
 
 static void PixelMap_fillSolid(pImageC_t pixels, const RectC_t roi, float filler)
 {
@@ -134,11 +137,171 @@ static int PixelMap_fillstd0(pImageC_t texture)
     return err;
 }
 
+#pragma region BlobGeneratorBase
+/**
+ * @brief set pixels to ranged float numbers around the center of the blob
+ * 
+ * @param work [in,out] render target
+ * @param center [in] pixel coord relative to work->roi orgin
+ * @param radius [in] blob radius
+ * @param colorRange [in] colorRange[0]: darkest limit, colorRange[1]: brightest limit
+ */
+static void PixelMap_CreateBlob(pImageC_t work, const Point2iC_t center, int radius, const float* colorRange)
+{
+    for (int r = 0; r < radius; r++)
+    {
+        int circumference = 4 * (2 * r + 1) - 4;
+        const int maxOffsetStep = 2 * r;
+        for (int iTrial = 0; iTrial < circumference; iTrial++)
+        {
+            Point2iC_t offset = { 0, 0 };
+            for (int iOffsetStep = 0; iOffsetStep < maxOffsetStep; iOffsetStep++)
+            {
+                offset[0] += Texture_RangedRand(-1, 2); // random number -1, 0, or 1
+                offset[1] += Texture_RangedRand(-1, 2);
+            }
+            const Point2iC_t absPoint = { work->roi[0] + center[0] + offset[0], work->roi[1] + center[1] + offset[1] };
+            if ((absPoint[0] < 0) || (absPoint[1] < 0) || (work->size[0] <= absPoint[0]) || (work->size[1] <= absPoint[1]))
+            { // out of work area
+                continue;
+            }
+            const int linearOffset = absPoint[0] + absPoint[1] * work->size[0];
+            work->elements[linearOffset] = Texture_RangedRandF(colorRange[0], colorRange[1]);
+        }
+    }
+}
+
+/**
+ * @brief blur source image by a box filter
+ * 
+ * @param work [in] source image
+ * @param halfKSize [in] half of box filter K-size; (halfKSize * 2 + 1 ) = box K-size.
+ * @param tex [out] blurred image
+ * @return unix errno compatible return code
+ */
+static void PixelMap_BlurBlob(pImageC_t work, const RectC_t sumRect, pImageC_t tex)
+{
+    SumKernelC_t sk = MK_SUMKERNEL(work, sumRect);
+    int err = EXIT_SUCCESS;
+    ImageC_t blurred  = NULLIMAGE_C;
+    assert(AREA_RECT(work->roi) == AREA_SIZE(tex->size));
+    float* texPtr = tex->elements;
+    const float rcpArea = 1.0f / AREA_RECT(sumRect);
+    for (int row = 0; row < work->roi[3]; row++)
+    {
+        for (int col = 0; col < work->roi[2]; col++)
+        {
+            texPtr[col] = rcpArea * SumKernelC_SATSum(&sk, col);
+        }
+        texPtr += tex->size[0];
+        sk.base += work->size[0];
+    }
+}
+
+static int PixelMap_SolidAndBlobsBase(pImageC_t tex, pcStdBlobRectTex_t texConf)
+{
+    int err = EXIT_SUCCESS;
+    ImageC_t work = NULLIMAGE_C;
+    do {
+        int32_t kSize = 2 * texConf->halfKSize  + 1;
+        RectC_t BoxK = { -texConf->halfKSize, -texConf->halfKSize, kSize, kSize };
+        RectC_t marginRect = { BoxK[0] - 2, BoxK[1] - 2, BoxK[2] + 4, BoxK[3] + 4 };
+        Size2iC_t workSize = { texConf->wh[0] + marginRect[2], texConf->wh[1] + marginRect[3] };
+        RectC_t workRoi = { -marginRect[0], -marginRect[1], texConf->wh[0], texConf->wh[1] };
+        Size2iC_t texSize = { texConf->wh[0], texConf->wh[1] };
+        RectC_t texRoi = { 0, 0, texConf->wh[0], texConf->wh[1] };
+        if ((EXIT_SUCCESS != (err = ImageC_New(&work, workSize, workRoi))) ||
+            (EXIT_SUCCESS != (err = ImageC_New(tex, texSize, texRoi))))
+        {
+            break;
+        }
+        {
+            float backgroundLuminance = Texture_RangedRandF(texConf->luminances[0], texConf->luminances[1]);
+            NLSL_FILLFLOATS(work.elements, backgroundLuminance, AREA_SIZE(work.size)); // set background
+        }
+        const int BlobCount = Texture_RangedRand(
+            texConf->blobCount[0] - texConf->blobCount[1], 
+            texConf->blobCount[0] + texConf->blobCount[1] + 1);
+        // create blobs
+        for (int iBlob = 0; iBlob != BlobCount; iBlob++)
+        {
+            const Point2iC_t center = { Texture_RangedRand(0, texConf->wh[0]), Texture_RangedRand(0, texConf->wh[1]) };
+            const int radius = Texture_RangedRand(
+                texConf->blobRadius[0] - texConf->blobRadius[1], 
+                texConf->blobRadius[0] + texConf->blobRadius[1] + 1);
+            PixelMap_CreateBlob(&work, center, radius, texConf->luminances + 2);
+        }
+        ImageC_Integrate(&work);
+        PixelMap_BlurBlob(&work, BoxK, tex);
+    } while (0);
+    ImageC_Delete(&work);
+    if (err)
+    {
+        ImageC_Delete(tex);
+    }
+    return err;
+}
+#pragma endregion BlobGeneratorBase
+
+static void PixelMap_blockcopy(pImageC_t dst, pcImageC_t src, const Point2iC_t dstO)
+{
+    int dstRow = dstO[1];
+    for (int row = 0; row < src->roi[3]; row++, dstRow++)
+    {
+        if ((dstRow < 0) || (dstRow >= dst->roi[3])) continue;
+        const float* ptrSrc = ImageC_BeginC(src) + row * src->size[0];
+        float* ptrDst = ImageC_Begin(dst) + dstRow * dst->size[0] + dstO[0];
+        memcpy(ptrDst, ptrSrc, src->roi[2] * sizeof(float));
+    }
+}
+
+static int PixelMap_fillstd1(pImageC_t texture)
+{
+    static const StdBlobRectTex_t texConf = STDBLOBRECTTEX0;
+    int err = EXIT_SUCCESS;
+    do {
+        { // init texture
+            const Size2iC_t WholeTextureSize = { texConf.wh[0] * texConf.blockCount[0], texConf.wh[1] * texConf.blockCount[1] };
+            const RectC_t WholeRoi = { 0, 0, WholeTextureSize[0], WholeTextureSize[1] };
+            if (EXIT_SUCCESS != (err = ImageC_New(texture, WholeTextureSize, WholeRoi)))
+            {
+                break;
+            }
+        }
+        for (int iBlockX = 0; iBlockX < texConf.blockCount[0]; iBlockX++)
+        {
+            for (int iBlockY = 0; iBlockY <= texConf.blockCount[1]; iBlockY++)
+            {
+                ImageC_t block = NULLIMAGE_C;
+                if ((0 == (iBlockX & 1)) && (iBlockY == texConf.blockCount[1])) continue;
+                if (EXIT_SUCCESS != (err = PixelMap_SolidAndBlobsBase(&block, &texConf)))
+                {
+                    ImageC_Delete(&block);
+                    break;
+                }
+                Point2iC_t copyDestOrigin = {
+                    iBlockX * texConf.wh[0],
+                    iBlockY * texConf.wh[1] - ((iBlockX & 1) ? texConf.wh[1]/2 : 0)
+                };
+                PixelMap_blockcopy(texture, &block, copyDestOrigin);
+                ImageC_Delete(&block);
+            }
+            if (err) break;
+        }
+    } while (0);
+    if (err)
+    {
+        ImageC_Delete(texture);
+    }
+    return err;
+}
+
 typedef int (*STDTEXTURECREATOR)(pImageC_t texture);
 
 static const STDTEXTURECREATOR textureCreator[] =
 {
-    PixelMap_fillstd0
+    PixelMap_fillstd0,
+    PixelMap_fillstd1
 };
 
 int PixelMap_fillstd(pImageC_t texture, StdTex_t std)
@@ -207,4 +370,14 @@ void TextureInterpolator_delete(pTextureInterpolator_t interpolator)
 {
     free((void*)(interpolator->table));
     interpolator->table = (float*)NULL;
+}
+
+static const StdBlobRectTex_t blobTexConfs[] = {
+    STDBLOBRECTTEX0
+};
+
+int PixelMap_SolidAndBlobs(pImageC_t tex, StdTex_t texConf)
+{
+    assert(texConf == StdTex1);
+    return PixelMap_SolidAndBlobsBase(tex, &blobTexConfs[texConf - StdTex1]);
 }

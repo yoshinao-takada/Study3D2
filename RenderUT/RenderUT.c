@@ -5,6 +5,7 @@
 int textureUT();
 int meshUT();
 int projectionUT();
+int projection2UT();
 
 int main(int argc, const char* *argv)
 {
@@ -18,9 +19,13 @@ int main(int argc, const char* *argv)
         // {
         //     LOGERRORBREAK(stderr, __FILE__, __LINE__, "meshUT() = %d", err);
         // }
-        if (EXIT_SUCCESS != (err = projectionUT()))
+        // if (EXIT_SUCCESS != (err = projectionUT()))
+        // {
+        //     LOGERRORBREAK(stderr, __FILE__, __LINE__, "projectionUT() = %d", err);
+        // }
+        if (EXIT_SUCCESS != (err = projection2UT()))
         {
-            LOGERRORBREAK(stderr, __FILE__, __LINE__, "projectionUT() = %d", err);
+            LOGERRORBREAK(stderr, __FILE__, __LINE__, "projection2UT() = %d", err);
         }
     } while (0);
     return err;
